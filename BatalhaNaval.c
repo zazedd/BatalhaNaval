@@ -113,7 +113,11 @@ void print_board(int n, int m, char board[n][m], int flag)
         }
         else // Esconde os barcos
         {
-            //Implementar
+            for (int j = 0; j < n; j++)
+            {
+                printf("   |");
+            }
+            printf("\n");
         }
 
         printf("+");
@@ -157,8 +161,6 @@ int typeToSize(char type)
             return -1;
             break;
     }
-
-    return 0;
 }
 
 /**
@@ -234,9 +236,26 @@ void init_boat(Boat *b, char type, Position xy, char dir)
  **/
 int check_free(int n, int m, Boat *boat, char board[n][m])
 {
-   //Implementar
-
-   return -1;
+    int controlador = 0;
+    for (int i = 0; i < boat->tSize; i++)
+    {
+       if (board[boat->coord[i].pos.x][boat->coord[i].pos.y] == ' ')
+       {
+           controlador++;
+       }
+       else
+       {
+           return 0;
+       }
+    }
+    if (controlador == boat->tSize)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 /** 
@@ -257,11 +276,86 @@ int check_free(int n, int m, Boat *boat, char board[n][m])
  * -3 se a direcção for inválida.
  * -4 se o tipo de barco for inválido.
  **/
-int place_boat(int x1, int y1, int dir, char type, Board *board)
+int place_boat(int x1, int y1, char dir, char type, Board *board)
 {
-    //Implementar
+    Position pos;
+    int numeroBarcos = 0;
+    pos.x = x1; 
+    pos.y = y1;
+    printf("aaaaaa");
 
-    return 1;
+    numeroBarcos = board->numBoats;
+
+    if (check_free(8, 8, &board->boats[numeroBarcos], board->board) == 1 && (x1 < 8 && y1 < 8) && (x1 > 0 && y1 > 0) && (dir == 'H' || dir == 'V') && typeToSize(type) > 0)
+    {
+        printf("aaaaaa");
+        if (dir == 'H')
+        {
+            switch (type)
+            {
+                case 'P': 
+                    init_boat(&board->boats[numeroBarcos], 'P', pos, 'H');
+                    board->numBoats++;
+                    break;
+                case 'N': 
+                    init_boat(&board->boats[numeroBarcos], 'N', pos, 'H');
+                    board->numBoats++;
+                    break;
+                case 'C':
+                    init_boat(&board->boats[numeroBarcos], 'C', pos, 'H');
+                    board->numBoats++;
+                    break;
+                case 'S':
+                    init_boat(&board->boats[numeroBarcos], 'S', pos, 'H');
+                    board->numBoats++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        else if ( dir == 'V')
+        {
+            switch (type)
+            {
+                case 'P': 
+                    init_boat(&board->boats[board->numBoats], 'P', pos, 'V');
+                    board->numBoats++;
+                    break;
+                case 'N': 
+                    init_boat(&board->boats[board->numBoats], 'N', pos, 'V');
+                    board->numBoats++;
+                    break;
+                case 'C':
+                    init_boat(&board->boats[board->numBoats], 'C', pos, 'V');
+                    board->numBoats++;
+                    break;
+                case 'S':
+                    init_boat(&board->boats[board->numBoats], 'S', pos, 'V');
+                    board->numBoats++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return 0;
+    }
+    else if (check_free(8, 8, &board->boats[1], board->board) == 0)
+    {
+        return -1;
+    }
+    else if (x1 > 8 || y1 > 8 || x1 < 0 || y1 < 0)
+    {
+        return -2;
+    }
+    else if (dir != 'H' || dir != 'V')
+    {
+        return -3;
+    }
+    else if (typeToSize(type) == -1)
+    {
+        return -4;
+    }
+    return 0;
 }
 
 /**
@@ -322,12 +416,18 @@ int main(void)
     Boat a;
     Position xy;
     init_board(N, M, &brd);
-    print_board(N, M, brd.board, 1);
+    print_board(N, M, brd.board, 0);
+
+    brd.numBoats = 0;
 
     xy.x = 1;
     xy.y = 2;
 
     init_boat(&a, 'C', xy, 'V');
+
+    printf("\n%d\n", check_free(8, 8, &a, brd.board));
+
+    place_boat(2, 1, 'H', 'P', &brd);
 
     
     
