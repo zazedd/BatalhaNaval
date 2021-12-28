@@ -191,19 +191,21 @@ void init_boat(Boat *b, char type, Position xy, char dir)
 {
 
     b->tSize = typeToSize(type);
-    b->afloat = b->tSize;
+    b->afloat = b->tSize; //iguala o numero de posicoes vivas ao numero total de posicoes, pois o barco acabou de ser inicializado
 
     b->type = type;
 
-    b->coord[0].afloat = 1;
+    //insere as coordenadas iniciais dadas pelo user no struct coord do barco e define essa posicao como viva
+    b->coord[0].afloat = 1; 
     b->coord[0].pos.x = xy.x;
     b->coord[0].pos.y = xy.y;
 
+    //o resto das posicoes sao iniciadas aqui, dependendo da direção do barco
     if (dir == 'H')
     {
         for (int i = 1; i < b->tSize; i++)
         {
-            b->coord[0].afloat = 1;
+            b->coord[i].afloat = 1;
             b->coord[i].pos.x = xy.x;
             b->coord[i].pos.y = b->coord[i-1].pos.y + 1;
         }
@@ -212,12 +214,11 @@ void init_boat(Boat *b, char type, Position xy, char dir)
     {
         for (int j = 1; j < b->tSize; j++)
         {
-            b->coord[0].afloat = 1;
+            b->coord[j].afloat = 1;
             b->coord[j].pos.y = xy.y;
             b->coord[j].pos.x = b->coord[j-1].pos.x + 1;
         }
     }
-
 }
 
 /**
@@ -239,21 +240,23 @@ void init_boat(Boat *b, char type, Position xy, char dir)
 int check_free(int n, int m, Boat *boat, char board[n][m])
 {
 
-    int controlador = 0, posX, posY;
+    int posLivres = 0, posX, posY;
     for (int i = 0; i < boat->tSize; i++)
     {
+       //este passo é apenas para readability 
        posX = boat->coord[i].pos.x;
        posY = boat->coord[i].pos.y;
-       if (board[posX][posY] == ' ')
+
+       if (board[posX][posY] == ' ') //se houver um espaço na posicao quer dizer que esta esta livre
        {
-           controlador++;
+           posLivres++;
        }
        else
        {
            return 0;
        }
     }
-    if (controlador == boat->tSize)
+    if (posLivres == boat->tSize) //se o numero de pos livres fôr = ao tamanho do barco, isso significa que o barco pode ser inserido
     {
         return 1;
     }
@@ -283,21 +286,22 @@ int check_free(int n, int m, Boat *boat, char board[n][m])
  **/
 int place_boat(int x1, int y1, char dir, char type, Board *board)
 {
-    int indiceBarcos = 0, tamanhoBarco, isFree, teste;
-    indiceBarcos = board->numBoats;
+    int indiceBarcos = 0, tamanhoBarco, isFree, checkIfInside;
+    indiceBarcos = board->numBoats; //para readability
 
     tamanhoBarco = typeToSize(type);
     isFree = check_free(8, 8, &board->boats[indiceBarcos], board->board);
 
-    teste = (dir == 'H') ? tamanhoBarco + y1 : tamanhoBarco + x1;
+    checkIfInside = (dir == 'H') ? tamanhoBarco + y1 : tamanhoBarco + x1; //se este numero, dependente da direção, fôr maior que 8 (N e M) então o barco está fora da zona de jogo
 
-    if (isFree == 1 && (x1 <= 8 && y1 <= 8) && (x1 >= 0 && y1 >= 0) && (dir == 'H' || dir == 'V') && tamanhoBarco > 0 && teste <= 8) //(tamanhoBarco + x1 <= 8 && y1 < 8) || (x1 < 8 && tamanhoBarco + y1 <= 8)
+    if (isFree == 1 && (x1 <= N && y1 <= M) && (x1 >= 0 && y1 >= 0) && (dir == 'H' || dir == 'V') && tamanhoBarco > 0 && checkIfInside <= N) //check para saber se é valido colocar ou nao o barco
     {
         board->numBoats++;
         board->numBoatsAfloat++;
 
-        if (dir == 'H')
+        if (dir == 'H') //como a direção é horizontal, temos de iterar a coordenada y
         {
+            //escreve na board os chars relativos aos barcos para indicar as suas posições
             switch (type)
             {
                 case 'P': 
@@ -332,9 +336,9 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
                     break;
             }
         }
-        else if ( dir == 'V')
+        else if ( dir == 'V') //como a direção é vertical, temos de iterar a coordenada x
         {
-
+            //escreve na board os chars relativos aos barcos para indicar as suas posições
             switch (type)
             {
                 case 'P': 
@@ -367,23 +371,22 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
         }
         return 0;
     }
-    else if (isFree == 0 || (tamanhoBarco + x1 > 8 || tamanhoBarco + y1 > 8))
+    else if (isFree == 0) //se alguma das posições já está ocupada
     {
         return -1;
     }
-    else if (x1 > 8 || y1 > 8 || x1 < 0 || y1 < 0)
+    else if (x1 > N || y1 > M || x1 < 0 || y1 < 0 || checkIfInside > N) //coordenadas invalidas
     {
         return -2;
     }
-    else if (dir != 'H' && dir != 'V')
+    else if (dir != 'H' && dir != 'V') //direcao invalida
     {
         return -3;
     }
-    else if (tamanhoBarco == -1)
+    else if (tamanhoBarco == -1) //tamanho invalido
     {
         return -4;
     }
-    return 0;
 }
 
 /**
@@ -403,55 +406,100 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
  **/
 char check_sink(int x, int y, Board *board)
 {
-    if (x < 0 || y < 0 || x > 8 || y > 8)
+    int posMorta = 0, posMorta2 = 0;
+
+    if (x < 0 || y < 0 || x > N || y > M) //coordenada invalida
     {
         return 'I';
     }
     else
     {
-        switch (board->board[x][y])
+        switch (board->board[x][y]) //saber se foi tiro certeiro, e que tipo de barco foi atingido se a primeira se verificar
         {
             case 'P':
-                if (board->boats[0].afloat == 0 && board->boats[0].coord->afloat == 0) //primeiro afloat - zero posição vivas / segundo afloat - está morto o navio
+                for (int i = 0; i < board->boats[0].tSize; i++) //checkar todas as casas para saber se ha alguma viva
                 {
+                    if (board->boats[0].coord[i].afloat == 0)
+                        posMorta++;
+                }
+
+                if (posMorta == board->boats[0].tSize) //se nao houver nenhuma viva, o navio está afundado
+                {
+                    board->boats[0].afloat == 0;
                     return 'P';
                 }
-                else
+                else //de outra forma, esta vivo
                 {
                     return 'F';
                 }
                 break;
             case 'N':
-                if (board->boats[1].afloat == 0 && board->boats[1].coord->afloat == 0)
+                for (int i = 0; i < board->boats[1].tSize; i++)
                 {
+                    if (board->boats[1].coord[i].afloat == 0)
+                        posMorta++;
+                }
+
+                if (posMorta == board->boats[1].tSize)
+                {
+                    board->boats[1].afloat == 0;
                     return 'N';
                 }
-                else
+                else //de outra forma, esta vivo
                 {
                     return 'F';
                 }
                 break;
             case 'C':
-                if (board->boats[2].afloat == 0 && board->boats[2].coord->afloat == 0) //check contratorpedeiro 1
+                for (int i = 0; i < board->boats[2].tSize; i++) //neste caso e no caso a seguir temos de fazer check aos 2 navios do mesmo tipo, o que é inefeciente
                 {
+                    if (board->boats[2].coord[i].afloat == 0)
+                        posMorta++;
+                    else
+                        return 'F';
+                }
+                for (int i = 0; i < board->boats[3].tSize; i++)
+                {
+                    if (board->boats[3].coord[i].afloat == 0)
+                        posMorta2++;
+                    else
+                        return 'F';
+                }
+
+                if (posMorta == board->boats[2].tSize)
+                {
+                    board->boats[2].afloat == 0;
                     return 'C';
                 }
-                else if (board->boats[3].afloat == 0 && board->boats[3].coord->afloat == 0) //check contratorpedeiro 2
+                else if (posMorta2 == board->boats[3].tSize)
                 {
+                    board->boats[3].afloat == 0;
                     return 'C';
                 }
                 else
                 {
                     return 'F';
                 }
-                break;
             case 'S':
-                if (board->boats[4].afloat == 0 && board->boats[4].coord->afloat == 0) //check submarino 1
+                for (int i = 0; i < board->boats[4].tSize; i++)
                 {
+                    if (board->boats[4].coord[i].afloat == 0)
+                        posMorta++;
+                }
+                for (int i = 0; i < board->boats[5].tSize; i++)
+                {
+                    if (board->boats[5].coord[i].afloat == 0)
+                        posMorta2++;
+                }
+
+                if (posMorta == board->boats[4].tSize)
+                {
+                    board->boats[4].afloat == 0;
                     return 'S';
                 }
-                else if (board->boats[5].afloat == 0 && board->boats[5].coord->afloat == 0) //check submarino 2
+                else if (posMorta2 == board->boats[5].tSize)
                 {
+                    board->boats[5].afloat == 0;
                     return 'S';
                 }
                 else
@@ -518,7 +566,6 @@ int main(void)
     init_boat(&n, 'N', xy1, 'V');
     init_boat(&c1, 'C', xy2, 'H');
 
-
     brd.numBoats = 0;
     brd.boats[0] = p;
     brd.boats[1] = n;
@@ -530,7 +577,12 @@ int main(void)
     place_boat(xy1.x, xy1.y, 'V', 'N', &brd);
     place_boat(xy2.x, xy2.y, 'H', 'C', &brd);
 
-    printf("%c\n", check_sink(1, 2, &brd));
+    brd.boats[1].coord[0].afloat = 0;
+    brd.boats[1].coord[1].afloat = 0;
+    brd.boats[1].coord[2].afloat = 0;
+    brd.boats[1].coord[3].afloat = 0;
+
+    printf("%c\n", check_sink(4, 3, &brd));
 
     print_board(N, M, brd.board, 1);
 
