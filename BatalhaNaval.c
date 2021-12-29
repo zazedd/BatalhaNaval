@@ -286,7 +286,7 @@ int check_free(int n, int m, Boat *boat, char board[n][m])
  **/
 int place_boat(int x1, int y1, char dir, char type, Board *board)
 {
-    int indiceBarcos = 0, tamanhoBarco, isFree, checkIfInside;
+    int indiceBarcos = 0, tamanhoBarco, isFree, checkIfInside, posX, posY;
     indiceBarcos = board->numBoats; //para readability
 
     tamanhoBarco = typeToSize(type);
@@ -296,80 +296,18 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
 
     if (isFree == 1 && (x1 <= N && y1 <= M) && (x1 >= 0 && y1 >= 0) && (dir == 'H' || dir == 'V') && tamanhoBarco > 0 && checkIfInside <= N) //check para saber se é valido colocar ou nao o barco
     {
+
+        for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
+        {
+            posX = board->boats[indiceBarcos].coord[i].pos.x; //readability
+            posY = board->boats[indiceBarcos].coord[i].pos.y;
+
+            board->board[posX][posY] = type;
+        }
+
         board->numBoats++;
         board->numBoatsAfloat++;
-         
-        //Ha uma maneira mais facil de fazer isto. Podemos simplesmente acessar as coordenadas do barco que queremos e fazer dessa maneira
-        if (dir == 'H') //como a direção é horizontal, temos de iterar a coordenada y
-        {
-            //escreve na board os chars relativos aos barcos para indicar as suas posições
-            switch (type)
-            {
-                case 'P': 
-                    for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
-                    {
-                        board->board[x1][y1 + i] = 'P';
-                    }
-                    break;
 
-                case 'N': 
-                    for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
-                    {
-                        board->board[x1][y1 + i] = 'N';
-                    }
-                    break;
-
-                case 'C':
-                    for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
-                    {
-                        board->board[x1][y1 + i] = 'C';
-                    }
-                    break;
-
-                case 'S':
-                    for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
-                    {
-                        board->board[x1][y1 + i] = 'S';
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
-        else if ( dir == 'V') //como a direção é vertical, temos de iterar a coordenada x
-        {
-            //escreve na board os chars relativos aos barcos para indicar as suas posições
-            switch (type)
-            {
-                case 'P': 
-                    for (int j = 0; j < board->boats[indiceBarcos].tSize; j++)
-                    {
-                        board->board[x1 + j][y1] = 'P';
-                    }
-                    break;
-                case 'N': 
-                    for (int j = 0; j < board->boats[indiceBarcos].tSize; j++)
-                    {
-                        board->board[x1 + j][y1] = 'N';
-                    }
-                    break;
-                case 'C':
-                    for (int j = 0; j < board->boats[indiceBarcos].tSize; j++)
-                    {
-                        board->board[x1 + j][y1] = 'C';
-                    }
-                    break;
-                case 'S':
-                    for (int j = 0; j < board->boats[indiceBarcos].tSize; j++)
-                    {
-                        board->board[x1 + j][y1] = 'S';
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
         return 0;
     }
     else if (isFree == 0) //se alguma das posições já está ocupada
