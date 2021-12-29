@@ -298,7 +298,8 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
     {
         board->numBoats++;
         board->numBoatsAfloat++;
-
+         
+        //Ha uma maneira mais facil de fazer isto. Podemos simplesmente acessar as coordenadas do barco que queremos e fazer dessa maneira
         if (dir == 'H') //como a direção é horizontal, temos de iterar a coordenada y
         {
             //escreve na board os chars relativos aos barcos para indicar as suas posições
