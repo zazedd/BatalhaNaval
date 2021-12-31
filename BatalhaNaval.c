@@ -325,10 +325,14 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
     {
         return -4;
     }
+
+    return 1;
 }
 
-/**
- * Function: check_sink
+/*
+ * @brief 
+ * 
+ *
  * 
  * Verifica se ao atacar a posição (x,y) algum barco é afundado. 
  * 
@@ -344,7 +348,7 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
  **/
 char check_sink(int x, int y, Board *board)
 {
-    int posMorta = 0, posMorta2 = 0;
+    int posMorta = 0;
 
     if (x < 0 || y < 0 || x > N || y > M) //coordenada invalida
     {
@@ -356,27 +360,29 @@ char check_sink(int x, int y, Board *board)
         {
             for (int j = 0; j < board->boats[i].tSize; j++) 
             {
-                if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y)
+                if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) //achar qual é o barco que a posição atingiu
                 {
                     for (int k = 0; k < board->boats[i].tSize; k++) 
                     {
-                        if (board->boats[i].coord[k].afloat == 0)
+                        if (board->boats[i].coord[k].afloat == 0) //fazer um loop sobre as posicoes todas para saber se estao todas mortas
                         {
                             posMorta++;
-                            printf("%d ", posMorta);
                         }
-                        if (posMorta == board->boats[i].tSize)
-                        {
-                            board->boats[i].afloat = 0;
-                            return board->boats[i].type;
-                        }
-                        else
-                            return 'F';
                     }
+
+                    if (posMorta == board->boats[i].tSize) //se elas estiverem todas mortas:
+                    {
+                        board->boats[i].afloat = 0; //o barco afunda
+                        return board->boats[i].type; //e devolvemos a letra correspondente ao barco em questão
+                    }
+                    else
+                        return 'F';
                 }
             }
         }
-    } 
+    }
+
+    return '0'; 
 }
 
 /**
@@ -436,7 +442,7 @@ int main(void)
     brd.boats[1] = n;
     brd.boats[2] = c1;
 
-    // printf("\n%d\n", check_free(8, 8, &a, brd.board));
+
 
     place_boat(xy0.x, xy0.y, 'H', 'P', &brd);
     place_boat(xy1.x, xy1.y, 'V', 'N', &brd);
@@ -463,6 +469,5 @@ int main(void)
     //C2 - 3
     //S1 - 4
     //S2 - 5
-    
     return 0;
 }
