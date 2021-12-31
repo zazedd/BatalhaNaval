@@ -353,6 +353,7 @@ char check_sink(int x, int y, Board *board)
     }
     else
     {
+        //for loop board->boats[i].coord.pos
         switch (board->board[x][y]) //saber se foi tiro certeiro, e que tipo de barco foi atingido se a primeira se verificar
         {
             case 'P':
