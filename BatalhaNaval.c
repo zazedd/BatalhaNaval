@@ -296,7 +296,6 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
 
     if (isFree == 1 && (x1 <= N && y1 <= M) && (x1 >= 0 && y1 >= 0) && (dir == 'H' || dir == 'V') && tamanhoBarco > 0 && checkIfInside <= N) //check para saber se é valido colocar ou nao o barco
     {
-
         for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
         {
             posX = board->boats[indiceBarcos].coord[i].pos.x; //readability
@@ -353,103 +352,29 @@ char check_sink(int x, int y, Board *board)
     }
     else
     {
-        //for loop board->boats[i].coord.pos
-        switch (board->board[x][y]) //saber se foi tiro certeiro, e que tipo de barco foi atingido se a primeira se verificar
+        for (int i = 0; i < board->numBoats; i++)
         {
-            case 'P':
-                for (int i = 0; i < board->boats[0].tSize; i++) //checkar todas as casas para saber se ha alguma viva
+            for (int j = 0; j < board->boats[i].tSize; j++) 
+            {
+                if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y)
                 {
-                    if (board->boats[0].coord[i].afloat == 0)
-                        posMorta++;
+                    for (int k = 0; k < board->boats[i].tSize; k++) 
+                    {
+                        if (board->boats[i].coord[k].afloat == 0)
+                        {
+                            posMorta++;
+                            printf("%d ", posMorta);
+                        }
+                        if (posMorta == board->boats[i].tSize)
+                        {
+                            board->boats[i].afloat = 0;
+                            return board->boats[i].type;
+                        }
+                        else
+                            return 'F';
+                    }
                 }
-
-                if (posMorta == board->boats[0].tSize) //se nao houver nenhuma viva, o navio está afundado
-                {
-                    board->boats[0].afloat == 0;
-                    return 'P';
-                }
-                else //de outra forma, esta vivo
-                {
-                    return 'F';
-                }
-                break;
-            case 'N':
-                for (int i = 0; i < board->boats[1].tSize; i++)
-                {
-                    if (board->boats[1].coord[i].afloat == 0)
-                        posMorta++;
-                }
-
-                if (posMorta == board->boats[1].tSize)
-                {
-                    board->boats[1].afloat == 0;
-                    return 'N';
-                }
-                else //de outra forma, esta vivo
-                {
-                    return 'F';
-                }
-                break;
-            case 'C':
-                for (int i = 0; i < board->boats[2].tSize; i++) //neste caso e no caso a seguir temos de fazer check aos 2 navios do mesmo tipo, o que é inefeciente
-                {
-                    if (board->boats[2].coord[i].afloat == 0)
-                        posMorta++;
-                    else
-                        return 'F';
-                }
-                for (int i = 0; i < board->boats[3].tSize; i++)
-                {
-                    if (board->boats[3].coord[i].afloat == 0)
-                        posMorta2++;
-                    else
-                        return 'F';
-                }
-
-                if (posMorta == board->boats[2].tSize)
-                {
-                    board->boats[2].afloat == 0;
-                    return 'C';
-                }
-                else if (posMorta2 == board->boats[3].tSize)
-                {
-                    board->boats[3].afloat == 0;
-                    return 'C';
-                }
-                else
-                {
-                    return 'F';
-                }
-            case 'S':
-                for (int i = 0; i < board->boats[4].tSize; i++)
-                {
-                    if (board->boats[4].coord[i].afloat == 0)
-                        posMorta++;
-                }
-                for (int i = 0; i < board->boats[5].tSize; i++)
-                {
-                    if (board->boats[5].coord[i].afloat == 0)
-                        posMorta2++;
-                }
-
-                if (posMorta == board->boats[4].tSize)
-                {
-                    board->boats[4].afloat == 0;
-                    return 'S';
-                }
-                else if (posMorta2 == board->boats[5].tSize)
-                {
-                    board->boats[5].afloat == 0;
-                    return 'S';
-                }
-                else
-                {
-                    return 'F';
-                }
-                break;
-            default:
-                return 'F';
-                break;
+            }
         }
     } 
 }
