@@ -6,6 +6,7 @@
  **/ 
 
 #include <stdio.h>
+#include <time.h>
 
 #define B 6
 #define N 8
@@ -239,7 +240,6 @@ void init_boat(Boat *b, char type, Position xy, char dir)
  **/
 int check_free(int n, int m, Boat *boat, char board[n][m])
 {
-
     int posLivres = 0, posX, posY;
     for (int i = 0; i < boat->tSize; i++)
     {
@@ -381,7 +381,6 @@ char check_sink(int x, int y, Board *board)
             }
         }
     }
-
     return '0'; 
 }
 
@@ -430,30 +429,36 @@ int main(void)
     xy2.x = 5;
     xy2.y = 5;
 
+    xy3.x = 0;
+    xy3.y = 0;
+
     init_board(N, M, &brd);
     print_board(N, M, brd.board, 0);
 
     init_boat(&p, 'P', xy0, 'H');
     init_boat(&n, 'N', xy1, 'V');
     init_boat(&c1, 'C', xy2, 'H');
+    init_boat(&c2, 'C', xy3, 'H');
 
     brd.numBoats = 0;
     brd.boats[0] = p;
     brd.boats[1] = n;
     brd.boats[2] = c1;
+    brd.boats[3] = c2;
 
-
+    // printf("\n%d\n", check_free(8, 8, &a, brd.board));
 
     place_boat(xy0.x, xy0.y, 'H', 'P', &brd);
     place_boat(xy1.x, xy1.y, 'V', 'N', &brd);
     place_boat(xy2.x, xy2.y, 'H', 'C', &brd);
+    place_boat(xy3.x, xy3.y, 'H', 'C', &brd);
 
-    brd.boats[1].coord[0].afloat = 0;
-    brd.boats[1].coord[1].afloat = 0;
-    brd.boats[1].coord[2].afloat = 0;
-    brd.boats[1].coord[3].afloat = 0;
+    brd.boats[2].coord[0].afloat = 0;
+    brd.boats[2].coord[1].afloat = 0;
+    brd.boats[2].coord[2].afloat = 0;
 
-    printf("%c\n", check_sink(4, 3, &brd));
+    printf("%c\n", check_sink(5, 5, &brd));
+    printf("%c\n", check_sink(0, 0, &brd));
 
     print_board(N, M, brd.board, 1);
 
