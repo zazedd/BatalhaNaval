@@ -115,7 +115,7 @@ void print_board(int n, int m, char board[n][m], int flag)
         {
             for (int j = 0; j < n; j++)
             {
-                if (board[i][j] == 'P' || board[i][j] == 'N' || board[i][j] == 'C' || board[i][j] == 'S')
+                if (board[i][j] == 'P' || board[i][j] == 'N' || board[i][j] == 'C' || board[i][j] == 'S') //substituir os barcos por espaços, deixa o resto como está
                     board[i][j] = ' ';
                 
                 printf(" %c |", board[i][j]);
