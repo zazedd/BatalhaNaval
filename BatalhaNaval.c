@@ -438,24 +438,23 @@ int target(int x, int y, Board* board)
                 {
                     board->boats[i].coord[j].afloat = 0;
                     board->board[x][y] = '*';
-                }
 
-                if (check_sink(x, y, board) == board->boats[i].type) //afundou
-                {
-                    for (int k = 0; k < board->boats[i].tSize; k++)
+                    if (check_sink(x, y, board) == board->boats[i].type) //afundou
                     {
-                        posX = board->boats[i].coord[k].pos.x;
-                        posY = board->boats[i].coord[k].pos.y;
+                        for (int k = 0; k < board->boats[i].tSize; k++)
+                        {
+                            posX = board->boats[i].coord[k].pos.x;
+                            posY = board->boats[i].coord[k].pos.y;
 
-                        board->board[posX][posY] = 'A';
+                            board->board[posX][posY] = 'A';
+                        }
+                        return typeToSize(board->boats[i].type);
                     }
-                    return typeToSize(board->boats[i].type);
                 }
             }
         }
         return 1;
     }
-
     return -3;
 }
 
@@ -512,7 +511,7 @@ int main(void)
 
     target(1,5, &brd);
 
-    //target(1,6, &brd);
+    target(1,6, &brd);
 
 
     target(0,0, &brd);
