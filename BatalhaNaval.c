@@ -6,6 +6,7 @@
  **/
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define B 6
 #define N 8
@@ -297,22 +298,7 @@ int place_boat(int x1, int y1, char dir, char type, Board* board)
 
     checkIfInside = (dir == 'H') ? tamanhoBarco + y1 : tamanhoBarco + x1; //se este numero, dependente da direção, fôr maior que 8 (N e M) então o barco está fora da zona de jogo
 
-    if (isFree == 1 && (x1 <= N && y1 <= M) && (x1 >= 0 && y1 >= 0) && (dir == 'H' || dir == 'V') && tamanhoBarco > 0 && checkIfInside <= N) //check para saber se é valido colocar ou nao o barco
-    {
-        for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
-        {
-            posX = board->boats[indiceBarcos].coord[i].pos.x; //readability
-            posY = board->boats[indiceBarcos].coord[i].pos.y;
-
-            board->board[posX][posY] = type;
-        }
-
-        board->numBoats++;
-        board->numBoatsAfloat++;
-
-        return 0;
-    }
-    else if (isFree == 0) //se alguma das posições já está ocupada
+    if (isFree == 0) //se alguma das posições já está ocupada
     {
         return -1;
     }
@@ -327,6 +313,21 @@ int place_boat(int x1, int y1, char dir, char type, Board* board)
     else if (tamanhoBarco == -1) //tamanho invalido
     {
         return -4;
+    }
+    else if (checkIfInside <= N) //se o barco estiver dentro do tabuleiro, podemos inseri-lo pois tudo o resto já está em ordem
+    {
+        for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
+        {
+            posX = board->boats[indiceBarcos].coord[i].pos.x; //readability
+            posY = board->boats[indiceBarcos].coord[i].pos.y;
+
+            board->board[posX][posY] = type; //inserir o barco no tabuleiro
+        }
+
+        board->numBoats++;
+        board->numBoatsAfloat++;
+
+        return 0;
     }
 
     return 1;
@@ -359,9 +360,9 @@ char check_sink(int x, int y, Board* board)
     }
     else
     {
-        for (int i = 0; i < board->numBoats; i++)
+        for (int i = 0; i < board->numBoats; i++) //iterar pelos barcos
         {
-            for (int j = 0; j < board->boats[i].tSize; j++)
+            for (int j = 0; j < board->boats[i].tSize; j++) //iterar as coordenadas
             {
                 if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) //achar qual é o barco que a posição atingiu
                 {
@@ -413,7 +414,7 @@ char check_sink(int x, int y, Board* board)
  **/
 int target(int x, int y, Board* board)
 {
-    int posX, posY;
+    int posX, posY, posLivre = 0;
 
     if (x < 0 || y < 0 || x > N || y > M) //coordenada invalida
     {
@@ -423,12 +424,7 @@ int target(int x, int y, Board* board)
     {
         return 0;
     }
-    else if (board->board[x][y] == ' ') //falhou
-    {
-        board->board[x][y] = 'F';
-        return -1;
-    }
-    else //a partir daqui temos a certeza de que se trata de um barco
+    else //a partir daqui temos a certeza de que se trata de um barco ou posicao livre
     {
         for (int i = 0; i < board->numBoats; i++)
         {
@@ -451,86 +447,139 @@ int target(int x, int y, Board* board)
                         return typeToSize(board->boats[i].type);
                     }
                 }
+                else
+                    posLivre++; //a posição está livre
             }
         }
-        return 1;
+
+        if (posLivre == 19) //se no fim do for loop as posicoes estiverem todas livres (19 = 5+4+3+3+2+2), entao falhou
+        {
+            board->board[x][y] = 'F';
+            return -1;
+        }
+        else
+            return 1; //acertou
     }
+
     return -3;
 }
 
 //int colocaNavio()
 int main(void)
 {
+    char tipoBarco, orientacao;
+    int indiceBarcos = 0, ataques = 0;
 
     Board brd;
-    Boat p, n, c1, c2, s1, s2;
-    Position xy0, xy1, xy2, xy3, xy4, xy5;
-
-    xy0.x = 1;
-    xy0.y = 2;
-
-    xy1.x = 4;
-    xy1.y = 3;
-
-    xy2.x = 5;
-    xy2.y = 5;
+    Boat b0, b1, b2, b3, b4, b5;
+    Position xy;
 
     init_board(N, M, &brd);
 
-    init_boat(&p, 'P', xy0, 'H');
-    init_boat(&n, 'N', xy1, 'V');
-    init_boat(&c1, 'C', xy2, 'H');
+    while (indiceBarcos < 6) //comeca no 0, sao 6 barcos
+    {
+        printf("qual é o barco (P, N, C, S)? ");
+        tipoBarco = getchar();
+        getchar(); //consumir paragrafo
 
-    brd.numBoats = 0;
-    brd.boats[0] = p;
-    brd.boats[1] = n;
-    brd.boats[2] = c1;
+        printf("qual é a orientacao (H, V)? ");
+        orientacao = getchar();
+        getchar(); //consumir paragrafo
 
+        printf("qual é a coordenada x? ");
+        scanf("%d", &xy.x);
 
+        printf("qual é a coordenada y? ");
+        scanf("%d", &xy.y);
+        getchar(); //consumir paragrafo
 
-    place_boat(xy0.x, xy0.y, 'H', 'P', &brd);
-    place_boat(xy1.x, xy1.y, 'V', 'N', &brd);
-    place_boat(xy2.x, xy2.y, 'H', 'C', &brd);
+        switch (indiceBarcos)
+        {
+            case 0:
+                init_boat(&b0, tipoBarco, xy, orientacao);
+                brd.boats[indiceBarcos] = b0;
+                place_boat(xy.x, xy.y, orientacao, tipoBarco, &brd);
 
-    brd.boats[1].coord[0].afloat = 0;
-    brd.boats[1].coord[1].afloat = 0;
-    brd.boats[1].coord[2].afloat = 0;
-    brd.boats[1].coord[3].afloat = 0;
+                system("clear");
+                printf("numero de barcos %d\n", indiceBarcos);
+                print_board(N, M, brd.board, 1);
 
-    print_board(N, M, brd.board, 1);
+                indiceBarcos++;
+                break;
+            case 1:
+                init_boat(&b1, tipoBarco, xy, orientacao);
+                brd.boats[indiceBarcos] = b1;
+                place_boat(xy.x, xy.y, orientacao, tipoBarco, &brd);
 
-    target(1,2, &brd);
+                system("clear");
+                printf("numero de barcos %d\n", indiceBarcos);
+                print_board(N, M, brd.board, 1);
 
+                indiceBarcos++;
+                break;
+            case 2:
+                init_boat(&b2, tipoBarco, xy, orientacao);
+                brd.boats[indiceBarcos] = b2;
+                place_boat(xy.x, xy.y, orientacao, tipoBarco, &brd);
 
-    target(1,3, &brd);
+                system("clear");
+                printf("numero de barcos %d\n", indiceBarcos);
+                print_board(N, M, brd.board, 1);
 
+                indiceBarcos++;
+                break;
+            case 3:
+                init_boat(&b3, tipoBarco, xy, orientacao);
+                brd.boats[indiceBarcos] = b3;
+                place_boat(xy.x, xy.y, orientacao, tipoBarco, &brd);
 
-    target(1,4, &brd);
+                system("clear");
+                printf("numero de barcos %d\n", indiceBarcos);
+                print_board(N, M, brd.board, 1);
 
+                indiceBarcos++;
+                break;
+            case 4:
+                init_boat(&b4, tipoBarco, xy, orientacao);
+                brd.boats[indiceBarcos] = b4;
+                place_boat(xy.x, xy.y, orientacao, tipoBarco, &brd);
 
+                //system("clear");
+                printf("numero de barcos %d\n", indiceBarcos);
+                print_board(N, M, brd.board, 1);
 
-    target(1,5, &brd);
+                indiceBarcos++;
+                break;
+            case 5:
+                init_boat(&b5, tipoBarco, xy, orientacao);
+                brd.boats[indiceBarcos] = b5;
+                place_boat(xy.x, xy.y, orientacao, tipoBarco, &brd);
 
-    target(1,6, &brd);
+                //system("clear");
+                printf("numero de barcos %d\n", indiceBarcos);
+                print_board(N, M, brd.board, 1);
 
+                indiceBarcos++;
+                break;
+            default:
+                break;
+        }
+    }
 
-    target(0,0, &brd);
+    while (ataques < 40)
+    {
+        print_board(N, M, brd.board, 0);
+            
+        printf("qual é a coordenada a atacar? (x) ");
+        scanf("%d", &xy.x);
 
-    //printf("%c\n", check_sink(4, 3, &brd));
+        printf("qual é a coordenada a atacar? (y) ");
+        scanf("%d", &xy.y);
 
-    print_board(N, M, brd.board, 0);
+        target(xy.x, xy.y, &brd);
+        ataques++;
+    }
 
-
-    /**Exemplo de uso da print_board e da place_boat**/
-    /**Precisa de as implementar primeiro**/
-    //print_board(N, M, brd.board, 0);
-    //place_boat(1,3, 'H', 'P', &brd);
-
-    //P - 0
-    //N - 1
-    //C1 - 2
-    //C2 - 3
-    //S1 - 4
-    //S2 - 5
     return 0;
 }
+
