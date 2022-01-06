@@ -723,7 +723,7 @@ int main(void)
     else
     {
         system("clear");
-        printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante);
+        printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante); //cona
         print_board(N, M, brd.board, 0);
     }
 
