@@ -119,9 +119,9 @@ void print_board(int n, int m, char board[n][m], int flag)
         {
             for (int j = 0; j < n; j++)
             {
-                if (board[i][j] == 'P' || board[i][j] == 'N' || board[i][j] == 'C' || board[i][j] == 'S') //substituir os barcos por espaços, deixa o resto como está
+                if (board[i][j] == 'P' || board[i][j] == 'N' || board[i][j] == 'C' || board[i][j] == 'S') { //substituir os barcos por espaços, deixa o resto como está
                     board[i][j] = ' ';
-                
+                }
                 printf(" %c |", board[i][j]);
             }
             printf("\n");
@@ -603,7 +603,7 @@ void wait()
 
 int main(void)
 {
-    char orientacao, nomeAtacante[100], nomeDefensor[100];
+    char orientacao, nomeAtacante[100], nomeDefensor[100], boardBarcos[N][M];
     int indiceBarcos = 0, ataques = 0, isPlacementValid = 0, checkHit = 0;
 
     Board brd;
@@ -651,6 +651,14 @@ int main(void)
             continue; //isto é implied mas assim fica mais claro
     }
 
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < M; j++)
+        {
+            boardBarcos[i][j] = brd.board[i][j];
+        }
+    }
+
     while (ataques < 40)
     {
         if (ataques > 0) {
@@ -661,6 +669,7 @@ int main(void)
         printf("Ataques restantes = %d\n", 40-ataques);
 
         print_board(N, M, brd.board, 0);
+        print_board(N, M, boardBarcos, 1);
             
         printf("Qual é a coordenada a atacar? (x) ");
         scanf("%d", &xy.x);
