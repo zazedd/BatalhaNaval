@@ -46,7 +46,7 @@ typedef struct
 } Board;
 
 Boat p, n, c1, c2, s1, s2;
-void wait();
+int wait(int isAttacking, int gaveUp);
 
 /**
  * NOTA IMPORTANTE:
@@ -184,10 +184,10 @@ char indiceToType(int indice)
 
     case 3:
         return 'C';
-    
+
     case 4:
         return 'S';
-    
+
     case 5:
         return 'S';
 
@@ -211,10 +211,10 @@ Boat indiceToBoat(int indice)
 
     case 3:
         return c2;
-    
+
     case 4:
         return s1;
-    
+
     case 5:
         return s2;
 
@@ -515,7 +515,7 @@ int target(int x, int y, Board* board)
     return -3;
 }
 
-int boatPlaceLogic(int indice, char type, char dir, Position xy, Boat boat, Board *brd)
+int boatPlaceLogic(int indice, char type, char dir, Position xy, Boat boat, Board* brd)
 {
     int check;
 
@@ -528,7 +528,7 @@ int boatPlaceLogic(int indice, char type, char dir, Position xy, Boat boat, Boar
 
     if (!check)
     {
-        printf("Número de barcos: %d\n", indice+1);
+        printf("Número de barcos: %d\n", indice + 1);
         print_board(N, M, brd->board, 1);
 
         return 1;
@@ -540,7 +540,7 @@ int boatPlaceLogic(int indice, char type, char dir, Position xy, Boat boat, Boar
         case -1:
             printf("A posição está ocupada. Tente de novo.\n");
             break;
-        
+
         case -2:
             printf("As coordenadas são inválidas. Tente de novo.\n");
             break;
@@ -549,7 +549,7 @@ int boatPlaceLogic(int indice, char type, char dir, Position xy, Boat boat, Boar
             printf("A direção é inválida. Tente de novo.\n");
             break;
 
-        case -4: 
+        case -4:
             printf("O tamanho do barco (tipo do barco) é inválido. Tente de novo.\n");
             break;
 
@@ -565,46 +565,65 @@ int hitLogic(int check)
 {
     switch (check)
     {
-        case 1:
-            return 1; //acertou
+    case 1:
+        return 1; //acertou
 
-        case 0:
-            system("clear");
-            printf("A posição já foi atacada. Tente de novo.\n");
-            return 0;
-        
-        case -2:
-            system("clear");
-            printf("As coordenadas são inválidas. Tente de novo.\n");
-            return 0;
+    case 0:
+        system("clear");
+        printf("A posição já foi atacada. Tente de novo.\n");
+        return 0;
 
-        default:
-            return 0;
+    case -2:
+        system("clear");
+        printf("As coordenadas são inválidas. Tente de novo.\n");
+        return 0;
+
+    default:
+        return 0;
     }
 }
 
-void removeBreakline(char *str)
+void removeBreakline(char* str)
 {
     int pos = strcspn(str, "\n");
     str[pos] = 0;
 }
 
-void wait()
+int wait(int isAttacking, int gaveUp)
 {
-  char input;
-  printf("\nPara prosseguir pressione ENTER, ou para sair do programa, 0 seguido de ENTER.\n");
+    char input;
+    if (isAttacking && !gaveUp)
+    {
+        printf("\nPara prosseguir com o ataque pressione ENTER, 1 seguido de ENTER para mostrar os barcos (IRÁ PERDER AUTOMATICAMENTE!), 0 seguido de ENTER para sair do programa.\n");
 
-  input = getchar();
-  if (input == '0')
-  {
-    exit(EXIT_SUCCESS);
-  }
+        input = getchar();
+        if (input == '0')
+        {
+            exit(EXIT_SUCCESS);
+        }
+        else if (input == '1')
+        {
+            return 1;
+        }
+    }
+    else
+    {
+        printf("\nPara prosseguir pressione ENTER, ou para sair do programa, 0 seguido de ENTER.\n");
+
+        input = getchar();
+        if (input == '0')
+        {
+            exit(EXIT_SUCCESS);
+        }
+    }
+
+    return 0;
 }
 
 int main(void)
 {
     char orientacao, nomeAtacante[100], nomeDefensor[100], boardBarcos[N][M];
-    int indiceBarcos = 0, ataques = 0, isPlacementValid = 0, checkHit = 0;
+    int indiceBarcos = 0, ataques = 0, isPlacementValid = 0, checkHit = 0, desistencia = 0;
 
     Board brd;
     Position xy;
@@ -612,18 +631,19 @@ int main(void)
     init_board(N, M, &brd);
 
     system("clear");
-    printf("Qual é o nome do jogador Atacante? ");
-    fgets(nomeAtacante, 100, stdin);
-    removeBreakline(nomeAtacante);
 
     printf("Qual é o nome do jogador Defensor? ");
     fgets(nomeDefensor, 100, stdin);
     removeBreakline(nomeDefensor);
 
+    printf("Qual é o nome do jogador Atacante? ");
+    fgets(nomeAtacante, 100, stdin);
+    removeBreakline(nomeAtacante);
+
     while (indiceBarcos < 6) //comeca no 0, sao 6 barcos
     {
         if (indiceBarcos > 0) {
-            wait();
+            wait(0, desistencia);
         }
         printf("Vez do jogador: %s\n", nomeDefensor);
 
@@ -662,15 +682,22 @@ int main(void)
     while (ataques < 40)
     {
         if (ataques > 0) {
-            wait();
+            if (wait(1, desistencia)) {
+                getchar(); //consumir paragrafo
+
+                system("clear");
+                printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
+                print_board(N, M, boardBarcos, 1);
+                desistencia = 1;
+                wait(0, desistencia);
+            } 
         }
         system("clear");
         printf("Vez do jogador: %s\n", nomeAtacante);
-        printf("Ataques restantes = %d\n", 40-ataques);
+        printf("Ataques restantes = %d\n", 40 - ataques);
 
         print_board(N, M, brd.board, 0);
-        print_board(N, M, boardBarcos, 1);
-            
+
         printf("Qual é a coordenada a atacar? (x) ");
         scanf("%d", &xy.x);
         getchar(); //consumir paragrafo
@@ -681,19 +708,18 @@ int main(void)
 
         checkHit = target(xy.x, xy.y, &brd); //funcao responsavel por atacar
 
-        if(hitLogic(checkHit)) //funcao que mostra os erros
+        if (hitLogic(checkHit)) //funcao que mostra os erros
         {
-            if (brd.numBoatsAfloat == 0)
-            {
-                break;
-            }
             ataques++;
         }
-        else
-            continue; //isto é implied mas assim fica mais claro
+
+        if (brd.numBoatsAfloat == 0)
+        {
+            break;
+        }
     }
 
-    if (brd.numBoatsAfloat != 0)
+    if (brd.numBoatsAfloat != 0 || desistencia == 1)
     {
         system("clear");
         printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
