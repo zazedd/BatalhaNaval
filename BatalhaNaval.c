@@ -31,7 +31,7 @@ typedef struct
 typedef struct
 {
     int afloat;        //Posições que ainda não foram afundadas
-    int tSize;         //Tamanho do tipo do barco 
+    int tSize;         //Tamanho do tipo do barco
     StateCoord coord[5]; //O barco maior tem 5 coordenadas, usando o tSize garantimos que acedemos apenas às existentes
     char type;         //Caracter que representa o tipo do barco
 } Boat;
@@ -299,7 +299,7 @@ int check_free(int n, int m, Boat* boat, char board[n][m])
     int posLivres = 0, posX, posY;
     for (int i = 0; i < boat->tSize; i++)
     {
-        //este passo é apenas para readability 
+        //este passo é apenas para readability
         posX = boat->coord[i].pos.x;
         posY = boat->coord[i].pos.y;
 
@@ -571,12 +571,12 @@ int hitLogic(int check)
     case 0:
         system("clear");
         printf("A posição já foi atacada. Tente de novo.\n");
-        return 0;
+        return -1;
 
     case -2:
         system("clear");
         printf("As coordenadas são inválidas. Tente de novo.\n");
-        return 0;
+        return -1;
 
     default:
         return 0;
@@ -690,7 +690,7 @@ int main(void)
                 print_board(N, M, boardBarcos, 1);
                 desistencia = 1;
                 wait(0, desistencia);
-            } 
+            }
         }
         system("clear");
         printf("Vez do jogador: %s\n", nomeAtacante);
@@ -708,7 +708,7 @@ int main(void)
 
         checkHit = target(xy.x, xy.y, &brd); //funcao responsavel por atacar
 
-        if (hitLogic(checkHit)) //funcao que mostra os erros
+        if(hitLogic(checkHit) >= 0)
         {
             ataques++;
         }
@@ -728,7 +728,7 @@ int main(void)
     else
     {
         system("clear");
-        printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante); //cona
+        printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante);
         print_board(N, M, brd.board, 0);
     }
 
