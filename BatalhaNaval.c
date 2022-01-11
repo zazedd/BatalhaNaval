@@ -597,24 +597,50 @@ int wait(int isAttacking, int gaveUp)
         printf("\nPara prosseguir com o ataque pressione ENTER, 1 seguido de ENTER para mostrar os barcos (IRÁ PERDER AUTOMATICAMENTE!), 0 seguido de ENTER para sair do programa.\n");
 
         input = getchar();
-        if (input == '0')
+        do
         {
-            exit(EXIT_SUCCESS);
-        }
-        else if (input == '1')
-        {
-            return 1;
-        }
+          switch (input)
+          {
+            case '0':
+              exit(EXIT_SUCCESS);
+
+            case '\n':
+              return 0;
+
+            case '1':
+              return 1;
+
+            default:
+              getchar(); //consumir paragrafo
+              printf("Input inválido, tente novamente.\n");
+              break;
+          }
+
+        } while (input != '0' || input != '\n' || input != '1');
     }
     else
     {
         printf("\nPara prosseguir pressione ENTER, ou para sair do programa, 0 seguido de ENTER.\n");
 
         input = getchar();
-        if (input == '0')
+        do
         {
-            exit(EXIT_SUCCESS);
-        }
+          switch (input)
+          {
+            case '0':
+              exit(EXIT_SUCCESS);
+
+            case '\n':
+              return 0;
+
+            default:
+              getchar(); //consumir paragrafo
+              printf("Input inválido, tente novamente.\n");
+              input = getchar();
+              break;
+          }
+
+        } while (input != '0' || input != '\n' || input != '1');
     }
 
     return 0;
