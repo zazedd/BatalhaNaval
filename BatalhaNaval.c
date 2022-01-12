@@ -45,7 +45,7 @@ typedef struct
     char board[N][M]; //Array que contém a informação de cada posição do tabuleiro
 } Board;
 
-Boat p, n, c1, c2, s1, s2;
+Boat p, n, c1, c2, s1, s2, err;
 int wait(int isAttacking, int gaveUp);
 
 /**
@@ -120,9 +120,11 @@ void print_board(int n, int m, char board[n][m], int flag)
             for (int j = 0; j < n; j++)
             {
                 if (board[i][j] == 'P' || board[i][j] == 'N' || board[i][j] == 'C' || board[i][j] == 'S') { //substituir os barcos por espaços, deixa o resto como está
-                    board[i][j] = ' ';
+                    printf("   |");
                 }
-                printf(" %c |", board[i][j]);
+                else {
+                    printf(" %c |", board[i][j]);
+                }
             }
             printf("\n");
         }
@@ -219,7 +221,7 @@ Boat indiceToBoat(int indice)
         return s2;
 
     default:
-        return s1;
+        return err;
     }
 }
 
@@ -321,7 +323,6 @@ int check_free(int n, int m, Boat* boat, char board[n][m])
         return 0;
     }
 }
-
 /**
  * Function: place_boat
  *
@@ -348,11 +349,10 @@ int place_boat(int x1, int y1, char dir, char type, Board* board)
     if (dir != 'H' && dir != 'V') return -3; //direção inválida
 
     tamanhoBarco = typeToSize(type);
-    isFree = check_free(8, 8, &board->boats[indiceBarcos], board->board);
 
     checkIfInside = (dir == 'H') ? tamanhoBarco + y1 : tamanhoBarco + x1; //se este numero, dependente da direção, fôr maior que 8 (N e M) então o barco está fora da zona de jogo
 
-    if (tamanhoBarco == -1) //se alguma das posições já está ocupada
+    if (tamanhoBarco == -1) // tamanho/tipo invalido
     {
         return -4;
     }
@@ -360,12 +360,18 @@ int place_boat(int x1, int y1, char dir, char type, Board* board)
     {
         return -2;
     }
-    else if (isFree == 0) //tamanho invalido
-    {
-        return -1;
-    }
     else if (checkIfInside <= N) //se o barco estiver dentro do tabuleiro, podemos inseri-lo pois tudo o resto já está em ordem
     {
+        board->boats[indiceBarcos] = indiceToBoat(indiceBarcos);
+        board->boats[indiceBarcos].coord[0].pos.x = x1;
+        board->boats[indiceBarcos].coord[0].pos.y = y1;
+
+        init_boat(&board->boats[indiceBarcos], type, board->boats[indiceBarcos].coord[0].pos, dir);
+
+        isFree = check_free(8, 8, &board->boats[indiceBarcos], board->board);
+
+        if(isFree == 0) return -1; //posicao ocupada
+
         for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
         {
             posX = board->boats[indiceBarcos].coord[i].pos.x; //readability
@@ -464,17 +470,22 @@ char check_sink(int x, int y, Board* board)
  **/
 int target(int x, int y, Board* board)
 {
-    int posX, posY, posLivre = 0;
+    int posX, posY;
 
     if (x < 0 || y < 0 || x >= N || y >= M) //coordenada invalida
     {
         return -2;
     }
+    else if (board->board[x][y] == ' ') // falhou
+    {
+        board->board[x][y] = 'F';
+        return -1;
+    }
     else if (board->board[x][y] == '*' || board->board[x][y] == 'A' || board->board[x][y] == 'F') //posicao ja atacada
     {
         return 0;
     }
-    else //a partir daqui temos a certeza de que se trata de um barco ou posicao livre
+    else //a partir daqui temos a certeza de que se trata de um barco
     {
         for (int i = 0; i < board->numBoats; i++)
         {
@@ -498,18 +509,10 @@ int target(int x, int y, Board* board)
                         return typeToSize(board->boats[i].type);
                     }
                 }
-                else
-                    posLivre++; //a posição está livre
             }
         }
 
-        if (posLivre == 19) //se no fim do for loop as posicoes estiverem todas livres (19 = 5+4+3+3+2+2), entao falhou
-        {
-            board->board[x][y] = 'F';
-            return -1;
-        }
-        else
-            return 1; //acertou
+        return 1; //acertou
     }
 
     return -3;
@@ -519,12 +522,10 @@ int boatPlaceLogic(int indice, char type, char dir, Position xy, Boat boat, Boar
 {
     int check;
 
-    init_boat(&boat, type, xy, dir);
-    brd->boats[indice] = boat;
+    //init_boat(&boat, type, xy, dir);
+    //brd->boats[indice] = boat;
 
     check = place_boat(xy.x, xy.y, dir, type, brd);
-    print_board(N, M, brd->board, 1);
-    system("clear");
 
     if (!check)
     {
@@ -569,12 +570,10 @@ int hitLogic(int check)
         return 1; //acertou
 
     case 0:
-        system("clear");
         printf("A posição já foi atacada. Tente de novo.\n");
         return -1;
 
     case -2:
-        system("clear");
         printf("As coordenadas são inválidas. Tente de novo.\n");
         return -1;
 
@@ -648,15 +647,13 @@ int wait(int isAttacking, int gaveUp)
 
 int main(void)
 {
-    char orientacao, nomeAtacante[100], nomeDefensor[100], boardBarcos[N][M];
-    int indiceBarcos = 0, ataques = 0, isPlacementValid = 0, checkHit = 0, desistencia = 0;
+    char orientacao, nomeAtacante[100], nomeDefensor[100];
+    int indiceBarcos = 0, ataques = 40, isPlacementValid = 0, checkHit = 0, desistencia = 0;
 
     Board brd;
     Position xy;
 
     init_board(N, M, &brd);
-
-    system("clear");
 
     printf("Qual é o nome do jogador Defensor? ");
     fgets(nomeDefensor, 100, stdin);
@@ -693,34 +690,20 @@ int main(void)
             indiceBarcos++;
             continue;
         }
-        else
-            continue; //isto é implied mas assim fica mais claro
     }
 
-    for (int i = 0; i < N; i++)
+    while (ataques > 0)
     {
-        for (int j = 0; j < M; j++)
-        {
-            boardBarcos[i][j] = brd.board[i][j];
-        }
-    }
+        if (wait(1, desistencia)) {
+            getchar(); //consumir paragrafo
 
-    while (ataques < 40)
-    {
-        if (ataques > 0) {
-            if (wait(1, desistencia)) {
-                getchar(); //consumir paragrafo
-
-                system("clear");
-                printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
-                print_board(N, M, boardBarcos, 1);
-                desistencia = 1;
-                wait(0, desistencia);
-            }
+            printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
+            print_board(N, M, brd.board, 1);
+            desistencia = 1;
+            wait(0, desistencia);
         }
-        system("clear");
         printf("Vez do jogador: %s\n", nomeAtacante);
-        printf("Ataques restantes = %d\n", 40 - ataques);
+        printf("Ataques restantes = %d\n", ataques);
 
         print_board(N, M, brd.board, 0);
 
@@ -736,7 +719,7 @@ int main(void)
 
         if(hitLogic(checkHit) >= 0)
         {
-            ataques++;
+            ataques--;
         }
 
         if (brd.numBoatsAfloat == 0)
@@ -747,13 +730,11 @@ int main(void)
 
     if (brd.numBoatsAfloat != 0 || desistencia == 1)
     {
-        system("clear");
         printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
         print_board(N, M, brd.board, 0);
     }
     else
     {
-        system("clear");
         printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante);
         print_board(N, M, brd.board, 0);
     }
