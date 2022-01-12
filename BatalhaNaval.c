@@ -611,6 +611,15 @@ int wait(int isAttacking, int gaveUp)
     return 0;
 }
 
+void swapPlayer(char *nome1, char *nome2){
+
+    char *provisorio;
+    provisorio = nome1;
+    nome1 = nome2;
+    nome2 = provisorio;
+}
+
+
 int main(void)
 {
     char orientacao, nomeAtacante[100], nomeDefensor[100], playAgain;
@@ -774,9 +783,28 @@ int main(void)
         }
 
         printf("\nVão pretender jogar de novo? (Y/n) ");
-        char playAgain = getchar();
 
-    } while ();
+        do
+        {  
+            playAgain = getchar();
+            
+            if (playAgain == 'Y' || playAgain == 'y')
+            {
+                swapPlayer(nomeAtacante, nomeDefensor);
+            }
+            else if (playAgain == 'n' || playAgain == 'N')
+            {
+                printf("O tó deseja uma boa continuação! Obrigado e volte sempre.\n");
+            }
+            else
+            {
+                printf("És uma merda Tó");
+                getchar();
+                playAgain = '\0';
+            }
+        }while (playAgain == '\0');
+      
+    } while (playAgain != 'n' || playAgain != 'N');
 
     // P - 0
     // N - 1
