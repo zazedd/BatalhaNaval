@@ -10,8 +10,8 @@
 #include <string.h>
 
 #define B 6
-#define N 8
-#define M 8
+#define N 10
+#define M 10
 
 /**Representa uma coordenada*/
 typedef struct
@@ -314,7 +314,7 @@ int check_free(int n, int m, Boat *boat, char board[n][m])
             return 0;
         }
     }
-    if (posLivres == boat->tSize) // se o numero de pos livres fôr = ao tamanho do barco, isso significa que o barco pode ser inserido
+    if (posLivres == boat->tSize) // se o numero de pos livres == ao tamanho do barco, isso significa que o barco pode ser inserido
     {
         return 1;
     }
@@ -351,7 +351,7 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
 
     tamanhoBarco = typeToSize(type);
 
-    checkIfInside = (dir == 'H') ? tamanhoBarco + y1 : tamanhoBarco + x1; // se este numero, dependente da direção, fôr maior que 8 (N e M) então o barco está fora da zona de jogo
+    checkIfInside = (dir == 'H') ? tamanhoBarco + y1 : tamanhoBarco + x1; // se este numero, dependente da direção, fôr maior que N ou M então o barco está fora da zona de jogo
 
     if (tamanhoBarco == -1) // tamanho/tipo invalido
     {
@@ -426,7 +426,7 @@ char check_sink(int x, int y, Board *board)
                 {
                     for (int k = 0; k < board->boats[i].tSize; k++)
                     {
-                        if (board->boats[i].coord[k].afloat == 0) // fazer um loop sobre as posicoes todas para saber se estao todas mortas
+                        if (board->boats[i].coord[k].afloat == 0) // fazer um loop sobre as posicoes todas para saber quantas estão mortas
                         {
                             posMorta++;
                         }
@@ -483,7 +483,7 @@ int target(int x, int y, Board *board)
         board->board[x][y] = 'F';
         return -1;
     }
-    else if (board->board[x][y] == '*' || board->board[x][y] == 'A' || board->board[x][y] == 'F') // posicao ja atacada
+    else if (board->board[x][y] == '*' || board->board[x][y] == 'A' || board->board[x][y] == 'F') // posicao já atacada
     {
         return 0;
     }
@@ -493,22 +493,22 @@ int target(int x, int y, Board *board)
         {
             for (int j = 0; j < board->boats[i].tSize; j++)
             {
-                if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) // marcar a posicao como morta
+                if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) // se acertou num barco
                 {
-                    board->boats[i].coord[j].afloat = 0;
+                    board->boats[i].coord[j].afloat = 0; // marcamos a posição como morta
                     board->board[x][y] = '*';
 
-                    if (check_sink(x, y, board) == board->boats[i].type) // afundou
+                    if (check_sink(x, y, board) == board->boats[i].type) // se afundou
                     {
                         for (int k = 0; k < board->boats[i].tSize; k++)
                         {
                             posX = board->boats[i].coord[k].pos.x;
-                            posY = board->boats[i].coord[k].pos.y;
+                            posY = board->boats[i].coord[k].pos.y; //readability
 
-                            board->board[posX][posY] = 'A';
+                            board->board[posX][posY] = 'A'; // marcamos todas as suas posições com 'A'
                         }
-                        board->numBoatsAfloat--;
-                        return typeToSize(board->boats[i].type);
+                        board->numBoatsAfloat--; // tiramos um barco vivo do tabuleiro
+                        return typeToSize(board->boats[i].type); // e devolvemos o numero correspondente ao tipo do barco
                     }
                 }
             }
@@ -613,22 +613,20 @@ int wait(int isAttacking, int gaveUp)
 
 void swapPlayer(char *nome1, char *nome2){
 
-    char *provisorio;
-    provisorio = nome1;
-    nome1 = nome2;
-    nome2 = provisorio;
+    char temp[100];
+    strcpy(temp, nome1);
+    strcpy(nome1, nome2);
+    strcpy(nome2, temp);
 }
 
 
 int main(void)
 {
-    char orientacao, nomeAtacante[100], nomeDefensor[100], playAgain;
-    int indiceBarcos = 0, ataques = 40, desistencia = 0, check;
+    char nomeAtacante[100], nomeDefensor[100], playAgain, orientacao;
+    int ataques = 40, desistencia = 0, check;
 
     Board brd;
     Position xy;
-
-    init_board(N, M, &brd);
 
     printf("Qual é o nome do jogador Defensor? ");
     fgets(nomeDefensor, 100, stdin);
@@ -640,15 +638,17 @@ int main(void)
 
     do
     {
-        while (indiceBarcos < 6) // comeca no 0, sao 6 barcos
+        init_board(N, M, &brd);
+
+        while (brd.numBoats < 6) // colocação dos barcos
         {
-            if (indiceBarcos > 0)
+            if (brd.numBoats > 0)
             {
                 wait(0, desistencia);
             }
             printf("\nVez do jogador: %s\n", nomeDefensor);
 
-            printf("A inserir o barco (%c):\n", indiceToType(indiceBarcos));
+            printf("A inserir o barco (%c):\n", indiceToType(brd.numBoats));
 
             printf("Qual é a orientação do barco? (H, V)? ");
             orientacao = getchar();
@@ -661,13 +661,12 @@ int main(void)
             scanf("%d", &xy.y);
             getchar(); // consumir paragrafo
 
-            check = place_boat(xy.x, xy.y, orientacao, indiceToType(indiceBarcos), &brd);
+            check = place_boat(xy.x, xy.y, orientacao, indiceToType(brd.numBoats), &brd);
 
             if (!check)
             {
-                printf("\nNúmero de barcos: %d\n", indiceBarcos + 1);
+                printf("\nNúmero de barcos: %d\n", brd.numBoats);
                 print_board(N, M, brd.board, 1);
-                indiceBarcos++;
             }
             else
             {
@@ -695,7 +694,7 @@ int main(void)
             }
         }
 
-        while (ataques > 0)
+        while (ataques > 0) // logica dos ataques
         {
             if (wait(1, desistencia))
             {
@@ -744,21 +743,21 @@ int main(void)
                 break;
 
             case 1:
+                printf("\nAcertou num barco!\n");
                 ataques--;
-                printf("Acertou num barco!\n");
                 break;
 
             case 0:
-                printf("A posição já foi atacada. Tente de novo.\n");
+                printf("\nA posição já foi atacada. Tente de novo.\n");
                 break;
 
             case -1:
+                printf("\nFalhou!\n");
                 ataques--;
-                printf("Falhou!\n");
                 break;
 
             case -2:
-                printf("As coordenadas são inválidas. Tente de novo.\n");
+                printf("\nAs coordenadas são inválidas. Tente de novo.\n");
                 break;
 
             default:
@@ -771,7 +770,7 @@ int main(void)
             }
         }
 
-        if (brd.numBoatsAfloat != 0 || desistencia == 1)
+        if (brd.numBoatsAfloat != 0 || desistencia == 1) // mensagem de ganho
         {
             printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
             print_board(N, M, brd.board, 0);
@@ -783,9 +782,10 @@ int main(void)
         }
 
         printf("\nVão pretender jogar de novo? (Y/n) ");
-
-        do
-        {  
+        // certificar-nos que o utilizador so escolhe 'y' ou 'n'
+        do 
+        { 
+            getchar(); 
             playAgain = getchar();
             
             if (playAgain == 'Y' || playAgain == 'y')
@@ -794,17 +794,18 @@ int main(void)
             }
             else if (playAgain == 'n' || playAgain == 'N')
             {
-                printf("O tó deseja uma boa continuação! Obrigado e volte sempre.\n");
+                printf("Obrigado por jogar, xau\n");
+                exit(EXIT_SUCCESS);
             }
             else
             {
-                printf("És uma merda Tó");
-                getchar();
+                printf("Input inválido. Tente de novo.");
                 playAgain = '\0';
             }
-        }while (playAgain == '\0');
+
+        } while (playAgain == '\0');
       
-    } while (playAgain != 'n' || playAgain != 'N');
+    } while (playAgain == 'y' || playAgain == 'Y');
 
     // P - 0
     // N - 1
