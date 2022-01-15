@@ -619,14 +619,36 @@ void swapPlayer(char *nome1, char *nome2){
     strcpy(nome2, temp);
 }
 
-
 int main(void)
 {
     char nomeAtacante[100], nomeDefensor[100], playAgain, orientacao;
-    int ataques = 40, desistencia = 0, check;
+    int ataques = 40, desistencia = 0, check, option = 0;
 
     Board brd;
     Position xy;
+
+    while (option != 1)
+    {
+        printf("Por favor, introduza qual a opção que pretende que o programa execute:\n");
+        printf("1.\tIniciar Jogo\n");
+        printf("2.\tMenu de ajuda\n");
+        printf("0.\tSair\n");
+        scanf("%d", &option);
+        switch (option)
+        {
+        case 1:
+            break;
+        case 2:
+            printf("Inseriu o menu de ajuda!");
+
+        default:
+            printf("Opção Inválida! Por favor selecione outra!");
+            break;
+        }
+    }
+    
+
+
 
     printf("Qual é o nome do jogador Defensor? ");
     fgets(nomeDefensor, 100, stdin);
