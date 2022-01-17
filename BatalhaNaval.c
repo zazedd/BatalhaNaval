@@ -636,7 +636,7 @@ int waitAttacking()
 int main(void)
 {
     char jogador1[100], jogador2[100], playAgain, orientacao, tipo;
-    int ataques = 40, desistencia = 0, check, option = 0;
+    int score[2], ataques = 40, desistencia = 0, check, option = 0;
 
     Board brd;
     Position xy;
@@ -694,13 +694,13 @@ int main(void)
 
             for (int i = 0; i < B - brd.numBoats; i++) // var i -> iterar pelos barcos
             {
-                if (i != (B-1) - brd.numBoats) // se nao for o ultimo da lista
+                if (i != (B-1) - brd.numBoats)
                 {
-                    printf("%c, ", indiceToType(brd.numBoats + i)); // print ao tipo com virgula
+                    printf("%c, ", indiceToType(brd.numBoats + i)); // print ao tipo com virgula, pois nao é o ultimo da lista
                 }
                 else
                 {
-                    printf("%c\n", indiceToType(brd.numBoats + i)); // print ao tipo sem virgula
+                    printf("%c\n", indiceToType(brd.numBoats + i)); // print ao tipo sem virgula, pois é o ultimo da lista
                 }
             }
 
@@ -719,14 +719,14 @@ int main(void)
 
             check = place_boat(xy.x, xy.y, orientacao, tipo, &brd); // função responsável pela colocação dos barcos
 
-            if (!check)
+            if (check == 0)
             {
                 printf("\nNúmero de barcos: %d\n", brd.numBoats);
                 print_board(N, M, brd.board, 1);
             }
             else
             {
-                switch (check)
+                switch (check) // dar informação relevante do erro ocorrido ao colocar o barco
                 {
                 case -1:
                     printf("\nA posição está ocupada. Tente de novo.\n");
@@ -748,13 +748,13 @@ int main(void)
                     break;
                 }
             }
-        }
+        } // acaba aqui o while da colocação dos barcos
 
         while (ataques > 0) // logica dos ataques
         {
             if (!desistencia) // se ainda nao desistiu:
-            {
-                if (waitAttacking()) // esperamos por input
+            {   
+                if (waitAttacking()) // esperamos por input, se o if for true, o utilizador desistiu.
                 {
                     // se o utilizador desistir:
 
@@ -765,7 +765,7 @@ int main(void)
                     wait();
                 }
             }
-            else // so é executado se o utilizador já tiver desistido
+            else // so é executado se o utilizador desistiu
             {
                 wait();
             }
@@ -802,7 +802,7 @@ int main(void)
 
             check = target(xy.x, xy.y, &brd); // funcao responsavel por atacar
 
-            switch (check) // dar informação ao utilizador conforme o output da função target(), e retirar um ataque à variavel dependendo se o ataque foi válido
+            switch (check) // dar informação ao utilizador conforme o output da função target(), e retirar um ataque se este foi válido
             {
             case 5:
                 printf("\nAfundou um Porta-Aviões!\n");
