@@ -876,7 +876,7 @@ int main(void)
             else if (playAgain == 'n' || playAgain == 'N')
             {
                 printf("Obrigado por jogar!\n");
-                exit(EXIT_SUCCESS);
+                return 0;
             }
             else
             {
