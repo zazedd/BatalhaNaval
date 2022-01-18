@@ -46,7 +46,14 @@ typedef struct
 } Board;
 
 Boat p, n, c1, c2, s1, s2, err;
-int wait(int isAttacking, int gaveUp);
+int wait(int isAttacking, int gaveUp);//???
+
+/**Struct que representa o nome do jogador e, a sua ocupação dentro do jogo.**/
+typedef struct{
+
+    char nome[100]; //Array que guarda o nome do jogador.
+    int occupation; //Quando 1, o jogador ataca, quando 0 o jogador defende.(Hipótese)
+}Player;
 
 /**
  * NOTA IMPORTANTE:
@@ -620,14 +627,13 @@ void swapPlayer(char *nome1, char *nome2){
 int main(void)
 {
     char nomeAtacante[100], nomeDefensor[100], playAgain, orientacao;
-    int ataques = 40, desistencia = 0, check, option = 0;
+    int ataques = 40, desistencia = 0, check, option = -1;
 
     Board brd;
     Position xy;
-
-    option = -1;
-    
-    printf("Bem vindo ao jogo da Batalha Naval!\n");
+    Player j1, j2;
+   
+    printf("Bem vindo ao jogo da Batalha naval!\n");
 
     while (option == -1){
         
@@ -660,16 +666,49 @@ int main(void)
         }
     }
     
-
-
-
-    printf("Qual é o nome do jogador Defensor? ");
+    /*printf("Qual é o nome do jogador Defensor? ");
     fgets(nomeDefensor, 100, stdin);
     removeBreakline(nomeDefensor);
 
     printf("Qual é o nome do jogador Atacante? ");
     fgets(nomeAtacante, 100, stdin);
-    removeBreakline(nomeAtacante);
+    removeBreakline(nomeAtacante);*/
+
+    option = -1;
+
+    printf("Antes de começarem o jogo, por favor jogadores, introduzam os seus nomes.\n");
+    printf("Primeiro Jogador:\n");
+    fgets(j1.nome, 100, stdin);
+    removeBreakline(j1.nome);
+    printf("Segundo Jogador:\n");
+    fgets(j2.nome, 100, stdin);
+    removeBreakline(j2.nome);
+
+    printf("%s, quer colocar os barcos os atacá-los?\nIntroduza 1 para atacar e 0 para defender!\n", j1.nome);
+    
+    while (option == -1){
+
+    scanf("%d", &option);
+
+        switch (option){
+        case 1:
+            printf("O jogador %s irá atacar!\n", j1.nome);
+            j1.occupation = 1;
+            printf("O jogador %s irá defender!\n", j2.nome);
+            j2.occupation = 0;           
+            break;
+        case 0:
+            printf("O jogador %s irá atacar!\n", j2.nome);
+            j2.occupation = 1;
+            printf("O jogador %s irá defender!\n", j1.nome);
+            j1.occupation = 0;
+            break;
+        default:
+            printf("Assim não vamos lá... Introduza 1 se quiser atacar e 0 se quiser defender!");
+            option = -1;
+            break;
+        }
+    }   
 
     do
     {
