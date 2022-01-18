@@ -10,8 +10,8 @@
 #include <string.h>
 
 #define B 6
-#define N 8
-#define M 8
+#define N 10
+#define M 10
 
 /**Representa uma coordenada*/
 typedef struct
@@ -45,8 +45,8 @@ typedef struct
     char board[N][M];   // Array que contém a informação de cada posição do tabuleiro
 } Board;
 
-Boat b; // usado para inserir os barcos
-void wait();
+Boat p, n, c1, c2, s1, s2, err;
+int wait(int isAttacking, int gaveUp);
 
 /**
  * NOTA IMPORTANTE:
@@ -119,8 +119,8 @@ void print_board(int n, int m, char board[n][m], int flag)
             for (int j = 0; j < n; j++)
             {
                 if (board[i][j] == 'P' || board[i][j] == 'N' || board[i][j] == 'C' || board[i][j] == 'S')
-                {
-                    printf("   |"); // substituir os barcos por espaços na hora do printf
+                { // substituir os barcos por espaços, deixa o resto como está
+                    printf("   |");
                 }
                 else
                 {
@@ -198,6 +198,33 @@ char indiceToType(int indice)
     }
 }
 
+Boat indiceToBoat(int indice)
+{
+    switch (indice)
+    {
+    case 0:
+        return p;
+
+    case 1:
+        return n;
+
+    case 2:
+        return c1;
+
+    case 3:
+        return c2;
+
+    case 4:
+        return s1;
+
+    case 5:
+        return s2;
+
+    default:
+        return err;
+    }
+}
+
 /**
  * Function: init_boat
  *
@@ -237,8 +264,8 @@ void init_boat(Boat *b, char type, Position xy, char dir)
         for (int i = 1; i < b->tSize; i++)
         {
             b->coord[i].afloat = 1;
-            b->coord[i].pos.x = xy.x;                      // como é horizontal, a coordenada x é sempre igual
-            b->coord[i].pos.y = b->coord[i - 1].pos.y + 1; // e coordenada y vai aumentando até chegarmos a ultima posição
+            b->coord[i].pos.x = xy.x;
+            b->coord[i].pos.y = b->coord[i - 1].pos.y + 1;
         }
     }
     else if (dir == 'V')
@@ -246,8 +273,8 @@ void init_boat(Boat *b, char type, Position xy, char dir)
         for (int j = 1; j < b->tSize; j++)
         {
             b->coord[j].afloat = 1;
-            b->coord[j].pos.y = xy.y;                      // como é vertical, a coordenada y é sempre igual
-            b->coord[j].pos.x = b->coord[j - 1].pos.x + 1; // e coordenada x vai aumentando até chegarmos a ultima posição
+            b->coord[j].pos.y = xy.y;
+            b->coord[j].pos.x = b->coord[j - 1].pos.x + 1;
         }
     }
 }
@@ -326,7 +353,7 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
 
     checkIfInside = (dir == 'H') ? tamanhoBarco + y1 : tamanhoBarco + x1; // se este numero, dependente da direção, fôr maior que N ou M então o barco está fora da zona de jogo
 
-    if (tamanhoBarco == -1 || indiceBarcos > 5) // tamanho/tipo invalido
+    if (tamanhoBarco == -1) // tamanho/tipo invalido
     {
         return -4;
     }
@@ -334,20 +361,20 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
     {
         return -2;
     }
-    else // podemos começar a inseri-lo pois tudo o resto já está em ordem (menos se a posição está livre)
+    else if (checkIfInside <= N) // se o barco estiver dentro do tabuleiro, podemos inseri-lo pois tudo o resto já está em ordem
     {
-        board->boats[indiceBarcos] = b;
+        board->boats[indiceBarcos] = indiceToBoat(indiceBarcos);
         board->boats[indiceBarcos].coord[0].pos.x = x1;
         board->boats[indiceBarcos].coord[0].pos.y = y1;
 
         init_boat(&board->boats[indiceBarcos], type, board->boats[indiceBarcos].coord[0].pos, dir);
 
-        isFree = check_free(N, M, &board->boats[indiceBarcos], board->board);
+        isFree = check_free(8, 8, &board->boats[indiceBarcos], board->board);
 
         if (isFree == 0)
             return -1; // posicao ocupada
 
-        for (int i = 0; i < board->boats[indiceBarcos].tSize; i++) // var i -> iterar pelos barcos
+        for (int i = 0; i < board->boats[indiceBarcos].tSize; i++)
         {
             posX = board->boats[indiceBarcos].coord[i].pos.x; // readability
             posY = board->boats[indiceBarcos].coord[i].pos.y;
@@ -391,15 +418,15 @@ char check_sink(int x, int y, Board *board)
     }
     else
     {
-        for (int i = 0; i < board->numBoats; i++) // var i -> iterar pelos barcos
+        for (int i = 0; i < board->numBoats; i++) // iterar pelos barcos
         {
-            for (int j = 0; j < board->boats[i].tSize; j++) // var j -> iterar as coordenadas
+            for (int j = 0; j < board->boats[i].tSize; j++) // iterar as coordenadas
             {
                 if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) // achar qual é o barco que a posição atingiu
                 {
                     for (int k = 0; k < board->boats[i].tSize; k++)
                     {
-                        if (board->boats[i].coord[k].afloat == 0) // fazer um loop sobre as posicoes todas do barco para saber quantas estão mortas
+                        if (board->boats[i].coord[k].afloat == 0) // fazer um loop sobre as posicoes todas para saber quantas estão mortas
                         {
                             posMorta++;
                         }
@@ -462,11 +489,11 @@ int target(int x, int y, Board *board)
     }
     else // a partir daqui temos a certeza de que se trata de um barco
     {
-        for (int i = 0; i < board->numBoats; i++) // var i -> iterar pelos barcos
+        for (int i = 0; i < board->numBoats; i++)
         {
-            for (int j = 0; j < board->boats[i].tSize; j++) // var j -> iterar as coordenadas
+            for (int j = 0; j < board->boats[i].tSize; j++)
             {
-                if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) // se acertou num barco:
+                if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) // se acertou num barco
                 {
                     board->boats[i].coord[j].afloat = 0; // marcamos a posição como morta
                     board->board[x][y] = '*';
@@ -476,29 +503,27 @@ int target(int x, int y, Board *board)
                         for (int k = 0; k < board->boats[i].tSize; k++)
                         {
                             posX = board->boats[i].coord[k].pos.x;
-                            posY = board->boats[i].coord[k].pos.y; // readability
+                            posY = board->boats[i].coord[k].pos.y; //readability
 
                             board->board[posX][posY] = 'A'; // marcamos todas as suas posições com 'A'
                         }
-                        board->numBoatsAfloat--;                 // tiramos um barco vivo do tabuleiro
+                        board->numBoatsAfloat--; // tiramos um barco vivo do tabuleiro
                         return typeToSize(board->boats[i].type); // e devolvemos o numero correspondente ao tipo do barco
                     }
                 }
             }
         }
-
         return 1; // acertou
     }
-
     return -3;
 }
 
 /**
  * Function: removeBreakline
  *
- * Função para remover o "\n" duma string
+ * Função para remover o "\n" do nome dos jogadores
  *
- * str: apontador para a string
+ * str: apontador para o array dos nomes
  *
  **/
 void removeBreakline(char *str)
@@ -508,207 +533,161 @@ void removeBreakline(char *str)
 }
 
 /**
- * Function: swapPlayer
+ * Function: wait
  *
- * Esta função é responsável pela troca dos nomes dos
- * jogadores quando estes pretendem jogar novamente.
- * O jogador que atacava passa a ser o defensor e vice-versa.
+ * Função para esperar por input do utilizador aquando à contínuação do programa
+ * Se estivermos a colocar os barcos, ou o utilizador que ataca já tiver desistido,
+ * não precisamos de perguntar ao utilizador se ele quer ver a posição inicial dos
+ * barcos no tabuleiro.
+ * Se o utilizador escrever '0', saímos do programa como esperado.
  *
- * nome1: pointer para um dos nomes que queremos trocar
- * nome2: pointer para um dos nomes que queremos trocar
+ * isAttacking: 1 se estivermos a atacar, 0 se estivermos a colocar os barcos
+ * gaveUp: estado da desistência do utilizador que ataca
+ *
+ *
+ * returns:
+ *   0 se o utilizador quiser continuar o programa
+ *   1 se o utilizador quiser ver os barcos na sua posição inicial
+ *   (dá exit quando o input é 0)
  *
  **/
-void swapPlayer(char *nome1, char *nome2)
+int wait(int isAttacking, int gaveUp)
 {
+    char input;
+    if (isAttacking && !gaveUp)
+    {
+        printf("\nPara prosseguir com o ataque pressione ENTER, 1 seguido de ENTER para mostrar os barcos (IRÁ PERDER AUTOMATICAMENTE!), 0 seguido de ENTER para sair do programa.\n");
+
+        input = getchar();
+        do
+        {
+            switch (input)
+            {
+            case '0':
+                exit(EXIT_SUCCESS);
+
+            case '\n':
+                return 0;
+
+            case '1':
+                return 1;
+
+            default:
+                getchar(); // consumir paragrafo
+                printf("Input inválido, tente novamente.\n");
+                input = getchar();
+                break;
+            }
+
+        } while (input != '0' || input != '\n' || input != '1');
+    }
+    else
+    {
+        printf("\nPara prosseguir pressione ENTER, ou para sair do programa, 0 seguido de ENTER.\n");
+
+        input = getchar();
+        do
+        {
+            switch (input)
+            {
+            case '0':
+                exit(EXIT_SUCCESS);
+
+            case '\n':
+                return 0;
+
+            default:
+                getchar(); // consumir paragrafo
+                printf("Input inválido, tente novamente.\n");
+                input = getchar();
+                break;
+            }
+
+        } while (input != '0' || input != '\n' || input != '1');
+    }
+
+    return 0;
+}
+
+void swapPlayer(char *nome1, char *nome2){
+
     char temp[100];
     strcpy(temp, nome1);
     strcpy(nome1, nome2);
     strcpy(nome2, temp);
 }
 
- /**
- * Function: lerOrientacao()
- *
- * Função responsável por ler a orientação e assegurar que 
- * esta está dentro dos conformes (é so uma letra).
- * 
- * returns:
- *   ch[0]: a orientação quando esta consiste apenas de uma letra 
- *
- **/
-char lerOrientacao()
-{
-    char ch[50;
-    fgets(ch, 50, stdin);
-    removeBreakline(ch);
-
-    while (strlen(ch) != 1)
-    {
-        printf("A orientação introduzida não é válida! Tente de novo. (H, V) ");
-        fgets(ch, 50, stdin);
-        removeBreakline(ch);
-    }
-
-    return ch[0];
-}
-
-/**
- * Function: wait
- *
- * Função responsável por esperar por input do utilizador aquando à contínuação do programa.
- * Se o utilizador der "ENTER", o programa continua normalmente.
- * Se o utilizador escrever '0', programa sai como esperado.
- * Outro tipo de input não esperado não é aceite e o utilizador é remetido a
- * inserir outro caracter.
- *
- **/
-void wait()
-{
-    char input;
-    printf("\nPara prosseguir pressione ENTER, ou para sair do programa, 0 seguido de ENTER.\n");
-
-    do
-    {
-        input = getchar();
-        switch (input)
-        {
-        case '0':
-            exit(EXIT_SUCCESS);
-
-        case '\n':
-            break;
-
-        default:
-            getchar(); // consumir paragrafo
-            printf("Input inválido, tente novamente.\n");
-            input = '\0';
-            break;
-        }
-
-    } while (input == '\0');
-}
-
-/**
- * Function: waitAttacking
- *
- * Função responsável por esperar por input do utilizador aquando à contínuação do programa quando este está a atacar.
- * Se o utilizador der "ENTER", o programa continua normalmente.
- * Se o utilizador escrever '0', programa sai como esperado.
- * Se o utilizador escrever '1', é lhe mostrado o tabuleiro com os barcos e ele perde automaticamente (feito na main).
- * Outro tipo de input não esperado não é aceite e o utilizador é remetido a
- * inserir outro caracter.
- *
- * returns:
- *   0 se o utilizador continuar o programa normalmente
- *   1 se o utilizador quiser desistir
- **/
-int waitAttacking()
-{
-    char input;
-    printf("\nPara prosseguir com o ataque pressione ENTER, 1 seguido de ENTER para mostrar os barcos (IRÁ PERDER AUTOMATICAMENTE!), 0 seguido de ENTER para sair do programa.\n");
-
-    input = getchar();
-    do
-    {
-        switch (input)
-        {
-        case '0':
-            exit(EXIT_SUCCESS);
-
-        case '\n':
-            return 0;
-
-        case '1':
-            return 1;
-
-        default:
-            getchar(); // consumir paragrafo
-            printf("Input inválido, tente novamente.\n");
-            input = getchar();
-            break;
-        }
-
-    } while (input != '0' || input != '\n' || input != '1');
-
-    return 0;
-}
-
 int main(void)
 {
-    char jogador1[100], jogador2[100], playAgain, orientacao, tipo;
-    int score[2], ataques = 40, desistencia = 0, check, option = 0;
+    char nomeAtacante[100], nomeDefensor[100], playAgain, orientacao;
+    int ataques = 40, desistencia = 0, check, option = 0;
 
     Board brd;
     Position xy;
 
-    while (option != 1) // Menu inicial:
-    {
-        printf("Por favor, introduza qual a opção que pretende que o programa execute:\n");
-        printf("1.\tIniciar Jogo\n");
+    option = -1;
+    
+    printf("Bem vindo ao jogo da Batalha Naval!\n");
+
+    while (option == -1){
+        
+        printf("\n1.\tIniciar Jogo\n");
         printf("2.\tMenu de ajuda\n");
-        printf("0.\tSair\n");
+        printf("0.\tSair\n\n");
+        printf("Por favor, introduza qual a opção que pretende que o programa execute:");
         scanf("%d", &option);
         getchar();
-
         switch (option)
         {
         case 0:
-            printf("Adeus! Obrigado por jogar!\n");
+            printf("Aguardamos por si num próximo jogo.\n");
             return 0;
-
         case 1:
+            printf("\nVamos dar início ao seu jogo!\n\n");
             break;
-
         case 2:
-            printf("Inseriu o menu de ajuda!");
-            wait(0, 0);
+            printf("Inseriu o menu de ajuda!\n\n");
+            printf("As regras do jogo serão as seguintes:\n- Existirão dois jogadores, um deles fazendo a colocação dos barcos e o outro posteriormente irá tentar afundá-los.\n- Existirá um total de seis barcos, com tamanhos diversos.\n");
+            printf("- A colocação dos barcos  poderá ser feita na horizontal, colocando H, e na vertical, colocando V.\n");
+            printf("- O jogador atacante terá um total de 40 jogadas para tentar afundar todos os barcos. Se, na sua jogada acertar num barco, no tabuleiro aparecerá '*' na posição atacada. Se afundar o barco, no seu tabuleiro aparecerá as posições do barco substituídas por um 'A'.\n");
+            option = -1;
             break;
-
         default:
-            printf("Opção Inválida! Por favor, tente de novo.\n\n");
+            printf("Opção Inválida! Por favor selecione outra!\n");
+            getchar();
+            option = -1;
             break;
         }
     }
+    
 
-    printf("\nQual é o nome do jogador Defensor? ");
-    fgets(jogador2, 100, stdin);
-    removeBreakline(jogador2);
+
+
+    printf("Qual é o nome do jogador Defensor? ");
+    fgets(nomeDefensor, 100, stdin);
+    removeBreakline(nomeDefensor);
 
     printf("Qual é o nome do jogador Atacante? ");
-    fgets(jogador1, 100, stdin);
-    removeBreakline(jogador1);
+    fgets(nomeAtacante, 100, stdin);
+    removeBreakline(nomeAtacante);
 
     do
     {
         init_board(N, M, &brd);
 
-        while (brd.numBoats < B) // colocação dos barcos
+        while (brd.numBoats < 6) // colocação dos barcos
         {
             if (brd.numBoats > 0)
             {
-                wait();
+                wait(0, desistencia);
             }
+            printf("\nVez do jogador: %s\n", nomeDefensor);
 
-            printf("\nVez do jogador: %s\n", jogador2);
-            printf("Faltam inserir os barcos: ");
-
-            for (int i = 0; i < B - brd.numBoats; i++) // var i -> iterar pelos barcos
-            {
-                if (i != (B-1) - brd.numBoats)
-                {
-                    printf("%c, ", indiceToType(brd.numBoats + i)); // print ao tipo com virgula, pois nao é o ultimo da lista
-                }
-                else
-                {
-                    printf("%c\n", indiceToType(brd.numBoats + i)); // print ao tipo sem virgula, pois é o ultimo da lista
-                }
-            }
-
-            tipo = indiceToType(brd.numBoats);
-            printf("A inserir o barco (%c):\n", tipo);
+            printf("A inserir o barco (%c):\n", indiceToType(brd.numBoats));
 
             printf("Qual é a orientação do barco? (H, V)? ");
-            orientacao = lerOrientacao();
+            orientacao = getchar();
+            getchar(); // consumir paragrafo
 
             printf("Qual é a coordenada x? ");
             scanf("%d", &xy.x);
@@ -717,16 +696,16 @@ int main(void)
             scanf("%d", &xy.y);
             getchar(); // consumir paragrafo
 
-            check = place_boat(xy.x, xy.y, orientacao, tipo, &brd); // função responsável pela colocação dos barcos
+            check = place_boat(xy.x, xy.y, orientacao, indiceToType(brd.numBoats), &brd);
 
-            if (check == 0)
+            if (!check)
             {
                 printf("\nNúmero de barcos: %d\n", brd.numBoats);
                 print_board(N, M, brd.board, 1);
             }
             else
             {
-                switch (check) // dar informação relevante do erro ocorrido ao colocar o barco
+                switch (check)
                 {
                 case -1:
                     printf("\nA posição está ocupada. Tente de novo.\n");
@@ -748,47 +727,21 @@ int main(void)
                     break;
                 }
             }
-        } // acaba aqui o while da colocação dos barcos
+        }
 
         while (ataques > 0) // logica dos ataques
         {
-            if (!desistencia) // se ainda nao desistiu:
-            {   
-                if (waitAttacking()) // esperamos por input, se o if for true, o utilizador desistiu.
-                {
-                    // se o utilizador desistir:
-
-                    getchar(); // consumir paragrafo
-                    printf("O JOGADOR \"%s\" GANHOU!\n\n", jogador2);
-                    print_board(N, M, brd.board, 1);
-                    desistencia = 1;
-                    wait();
-                }
-            }
-            else // so é executado se o utilizador desistiu
+            if (wait(1, desistencia))
             {
-                wait();
-            }
+                getchar(); // consumir paragrafo
 
-            printf("Vez do jogador: %s\n", jogador1);
+                printf("O JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
+                print_board(N, M, brd.board, 1);
+                desistencia = 1;
+                wait(0, desistencia);
+            }
+            printf("Vez do jogador: %s\n", nomeAtacante);
             printf("Ataques restantes = %d\n", ataques);
-
-            printf("Faltam afundar os barcos: ");
-
-            for (int i = 0; i < brd.numBoats; i++) // var i -> iterar pelos barcos
-            {
-                if (brd.boats[i].afloat != 0) // se o barco nao estiver afundado
-                {
-                    if (i != brd.numBoats - 1) // e se nao for o ultimo da lista
-                    {
-                        printf("%c, ", brd.boats[i].type); // print ao tipo desse barco (com virgula pois ha mais barcos a seguir)
-                    }
-                    else
-                    {
-                        printf("%c\n", brd.boats[i].type); // print ao tipo desse barco (sem virgula pois é o ultimo da lista)
-                    }
-                }
-            }
 
             print_board(N, M, brd.board, 0);
 
@@ -802,7 +755,7 @@ int main(void)
 
             check = target(xy.x, xy.y, &brd); // funcao responsavel por atacar
 
-            switch (check) // dar informação ao utilizador conforme o output da função target(), e retirar um ataque se este foi válido
+            switch (check)
             {
             case 5:
                 printf("\nAfundou um Porta-Aviões!\n");
@@ -846,47 +799,55 @@ int main(void)
                 break;
             }
 
-            if (brd.numBoatsAfloat == 0) // se todos os barcos estiverem mortos, então o jogo acabou
+            if (brd.numBoatsAfloat == 0)
             {
                 break;
             }
-        } // acaba aqui o while ataques
+        }
 
-        if (brd.numBoatsAfloat != 0 || desistencia == 1) // mensagem de winner
+        if (brd.numBoatsAfloat != 0 || desistencia == 1) // mensagem de ganho
         {
-            printf("\nO JOGADOR \"%s\" GANHOU!\n\n", jogador2);
+            printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
             print_board(N, M, brd.board, 0);
         }
         else
         {
-            printf("\nO JOGADOR \"%s\" GANHOU!\n\n", jogador1);
+            printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante);
             print_board(N, M, brd.board, 0);
         }
 
         printf("\nVão pretender jogar de novo? (Y/n) ");
-        do // certificar-nos que o utilizador so escolhe 'y' ou 'n'
-        {
-            getchar(); // consumir paragrafo
+        // certificar-nos que o utilizador so escolhe 'y' ou 'n'
+        do 
+        { 
+            getchar(); 
             playAgain = getchar();
-
+            
             if (playAgain == 'Y' || playAgain == 'y')
             {
-                swapPlayer(jogador1, jogador2); // troca dos nomes, pois o jogo vai recomeçar
+                swapPlayer(nomeAtacante, nomeDefensor);
             }
             else if (playAgain == 'n' || playAgain == 'N')
             {
-                printf("Obrigado por jogar!\n");
-                return 0;
+                printf("Obrigado por jogar, xau\n");
+                exit(EXIT_SUCCESS);
             }
             else
             {
-                printf("Input inválido! Tente de novo.");
+                printf("Input inválido. Tente de novo.");
                 playAgain = '\0';
             }
 
         } while (playAgain == '\0');
+      
+    } while (playAgain == 'y' || playAgain == 'Y');
 
-    } while (playAgain == 'y' || playAgain == 'Y'); // se a resposta for y, o jogo repete
-
+    // P - 0
+    // N - 1
+    // C1 - 2
+    // C2 - 3
+    // S1 - 4
+    // S2 - 5
+    
     return 0;
 }
