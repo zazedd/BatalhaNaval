@@ -48,9 +48,9 @@ typedef struct
 /**Struct que representa o nome do jogador e, a sua ocupação dentro do jogo.**/
 typedef struct
 {
-    char nome[100]; //Array que guarda o nome do jogador.
-    int occupation; //Quando 1, o jogador ataca, quando 0 o jogador defende.
-    int score;      //Score de cada jogador
+    char nome[100];     // Array que guarda o nome do jogador.
+    int occupation;     // Quando 1, o jogador ataca, quando 0 o jogador defende.
+    int score;          // Score de cada jogador
 } Player;
 
 Boat b; // usado para inserir os barcos, é arbitrario e apenas representa a struct
@@ -231,31 +231,27 @@ void init_boat(Boat *b, char type, Position xy, char dir)
 
     b->tSize = typeToSize(type);
     b->afloat = b->tSize; // iguala o numero de posicoes vivas ao numero total de posicoes, pois o barco acabou de ser inicializado
-
     b->type = type;
 
-    // insere as coordenadas iniciais dadas pelo user no struct coord do barco e define essa posicao como viva
-    b->coord[0].afloat = 1;
-    b->coord[0].pos.x = xy.x;
-    b->coord[0].pos.y = xy.y;
-
-    // o resto das posicoes sao iniciadas aqui, dependendo da direção do barco
+    // as posicoes sao iniciadas aqui, dependendo da direção do barco
     if (dir == 'H')
     {
-        for (int i = 1; i < b->tSize; i++)
+        for (int i = 0; i < b->tSize; i++)
         {
             b->coord[i].afloat = 1;
-            b->coord[i].pos.x = xy.x;                      // como é horizontal, a coordenada x é sempre igual
-            b->coord[i].pos.y = b->coord[i - 1].pos.y + 1; // e coordenada y vai aumentando até chegarmos a ultima posição
+            b->coord[i].pos.x = xy.x;                       // como é horizontal, a coordenada x é sempre igual
+            b->coord[i].pos.y = xy.y + i;                   // e coordenada y vai aumentando até chegarmos a ultima posição   
+            
         }
     }
     else if (dir == 'V')
     {
-        for (int j = 1; j < b->tSize; j++)
+        for (int j = 0; j < b->tSize; j++)
         {
             b->coord[j].afloat = 1;
-            b->coord[j].pos.y = xy.y;                      // como é vertical, a coordenada y é sempre igual
-            b->coord[j].pos.x = b->coord[j - 1].pos.x + 1; // e coordenada x vai aumentando até chegarmos a ultima posição
+            b->coord[j].pos.x = xy.x + j;                   // como é vertical, a coordenada x vai aumentando até chegarmos a ultima posição
+            b->coord[j].pos.y = xy.y;                       // a coordenada y é sempre igual
+            
         }
     }
 }
@@ -539,6 +535,8 @@ void swapRole(int *role1, int *role2)
  *
  * Função responsável por ler a orientação e assegurar que 
  * esta está dentro dos conformes (é so uma letra).
+ * Nao impomos uma restricao quanto a letra porque temos fé de que o código
+ * que já implementamos nas outras funções fará o seu trabalho
  * 
  * returns:
  *   ch[0]: a orientação quando esta consiste apenas de uma letra 
@@ -694,7 +692,7 @@ void boatPlacingLogic(char *name1, char *name2, Position pos, Board *board)
     scanf("%d", &pos.y);
     getchar(); // consumir paragrafo
 
-    check = place_boat(pos.x, pos.y, orientacao, tipo, &board); // função responsável pela colocação dos barcos
+    check = place_boat(pos.x, pos.y, orientacao, tipo, board); // função responsável pela colocação dos barcos
 
     if (check == 0)
     {
