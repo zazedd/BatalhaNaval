@@ -651,6 +651,11 @@ int waitAttacking()
  * - Pedir ao utilizador para os inserir, e então realizar a insersão (place_boat).
  * - Avisar o utilizador caso ele tenha feito um erro ao inserir os barcos.
  * 
+ * name1: nome do jogador que defende
+ * name2: nome do jogador que ataca
+ * pos: struct posição para as coordenadas
+ * board: posição atual do tabuleiro
+ * 
  **/
 void boatPlacingLogic(char *name1, char *name2, Position pos, Board *board)
 {
@@ -733,6 +738,13 @@ void boatPlacingLogic(char *name1, char *name2, Position pos, Board *board)
  * - Dizer quais barcos faltam afundar.
  * - Pedir ao utilizador as coordenadas do ataque, e então realizá-lo (target).
  * - Avisar o utilizador caso ele tenha feito um erro ao inserir as coordenadas.
+ * 
+ * gaveUp: estado da desistencia do jogador que ataca
+ * attacks: numero de ataques restantes
+ * name1: nome do jogador que defende
+ * name2: nome do jogador que ataca
+ * pos: struct posição para as coordenadas
+ * board: posição atual do tabuleiro
  * 
  **/
 void attackLogic(int gaveUp, int *attacks, char *name1, char *name2, Position pos, Board *board)
