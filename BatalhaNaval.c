@@ -179,7 +179,7 @@ int typeToSize(char type)
 }
 
 /**
- * Function: typeToSize
+ * Function: indiceToType
  *
  * Dado o indice do barco devolve o seu tipo.
  *
