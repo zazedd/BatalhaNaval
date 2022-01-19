@@ -241,7 +241,6 @@ void init_boat(Boat *b, char type, Position xy, char dir)
             b->coord[i].afloat = 1;
             b->coord[i].pos.x = xy.x;                       // como é horizontal, a coordenada x é sempre igual
             b->coord[i].pos.y = xy.y + i;                   // e coordenada y vai aumentando até chegarmos a ultima posição   
-            
         }
     }
     else if (dir == 'V')
@@ -251,7 +250,6 @@ void init_boat(Boat *b, char type, Position xy, char dir)
             b->coord[j].afloat = 1;
             b->coord[j].pos.x = xy.x + j;                   // como é vertical, a coordenada x vai aumentando até chegarmos a ultima posição
             b->coord[j].pos.y = xy.y;                       // a coordenada y é sempre igual
-            
         }
     }
 }
