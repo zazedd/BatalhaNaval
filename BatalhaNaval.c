@@ -777,7 +777,7 @@ void attackLogic(int gaveUp, int *attacks, char *name1, char *name2, Position po
     {
         if (board->boats[i].afloat != 0) // se o barco nao estiver afundado
         {
-            if (i != board->numBoats - 1) // e se nao for o ultimo da lista
+            if (i != board->numBoats - 1 && board->numBoatsAfloat != 1) // e se nao for o ultimo da lista
             {
                 printf("%c, ", board->boats[i].type); // print ao tipo desse barco (com virgula pois ha mais barcos a seguir)
             }
@@ -901,7 +901,7 @@ int main(void)
     fgets(j2.nome, 100, stdin);
     removeBreakline(j2.nome);
 
-    printf("\n%s, quer colocar os barcos os atacá-los?\nIntroduza 1 para atacar e 0 para defender: ", j1.nome);
+    printf("\n%s, quer colocar os barcos ou atacá-los?\nIntroduza 1 para atacar e 0 para defender: ", j1.nome);
     while (option == -1)
     {
         scanf("%d", &option);
@@ -937,6 +937,17 @@ int main(void)
     do
     {
         init_board(N, M, &brd);
+
+        if (j1.occupation == 0) // se j1 defende
+        {
+            nomeDefensor = j1.nome;
+            nomeAtacante = j2.nome;
+        }
+        else if (j1.occupation == 1) // se j1 ataca
+        {
+            nomeDefensor = j2.nome;
+            nomeAtacante = j1.nome;
+        }
 
         while (brd.numBoats < B) // colocação dos barcos
         {
@@ -990,11 +1001,11 @@ int main(void)
         do
         {
             playAgain = getchar();
-            getchar(); // enter
 
             if (playAgain == 'Y' || playAgain == 'y')
             {
-                printf("TROCA DE JOGADORES!, %s agora vai defender!\n", nomeAtacante);
+                printf("\nTROCA DE JOGADORES!, %s agora vai defender!\n", nomeAtacante);
+                getchar(); // consumir paragrafo
                 ataques = 40;
                 swapRole(&j1.occupation, &j2.occupation); // troca dos nomes, pois o jogo vai recomeçar
             }
@@ -1003,9 +1014,14 @@ int main(void)
                 printf("Obrigado por jogar!\n");
                 return 0;
             }
+            else if (playAgain == '\n') // por vezes entra um '\n' por alguma razao
+            {
+                playAgain = '\0';
+            }
             else
             {
                 printf("Input inválido! Tente de novo.");
+                getchar(); // consumir paragrafo
                 playAgain = '\0';
             }
 
