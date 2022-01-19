@@ -45,12 +45,12 @@ typedef struct
     char board[N][M];   // Array que contém a informação de cada posição do tabuleiro
 } Board;
 
-/**Struct que representa o nome do jogador e, a sua ocupação dentro do jogo.**/
+/**Representa o nome do jogador e, sua ocupação dentro do jogo e o seu numero de vitórias.**/
 typedef struct
 {
     char nome[100];     // Array que guarda o nome do jogador.
     int occupation;     // Quando 1, o jogador ataca, quando 0 o jogador defende.
-    int score;          // Score de cada jogador
+    int victories;          // Vitorias de cada jogador
 } Player;
 
 Boat b; // usado para inserir os barcos, é arbitrario e apenas representa a struct
@@ -101,7 +101,6 @@ void init_board(int n, int m, Board *b)
  * flag: indicador do modo de visualização do tabuleiro -- se for 0 (zero) não
  *       mostra os barcos; se for diferente de 0 (zero) mostra.
  */
-
 void print_board(int n, int m, char board[n][m], int flag)
 {
     printf("+");
@@ -154,7 +153,7 @@ void print_board(int n, int m, char board[n][m], int flag)
  *
  * type: tipo do barco ('P', 'N', 'C', ou 'S')
  *
- * return
+ * returns
  *  -1 se o tipo de barco for inválido
  *  caso contrário, devolve o tamanho do barco
  **/
@@ -179,6 +178,17 @@ int typeToSize(char type)
     }
 }
 
+/**
+ * Function: typeToSize
+ *
+ * Dado o indice do barco devolve o seu tipo.
+ *
+ * indice: indice do barco
+ * ('P' -> 0, 'N' -> 1, 'C1' -> 2, 'C2' -> 3, 'S' -> 4, 'S' -> 5)
+ *
+ * returns
+ *  O tipo do barco em função do indice.
+ **/
 char indiceToType(int indice)
 {
     switch (indice)
@@ -298,6 +308,7 @@ int check_free(int n, int m, Boat *boat, char board[n][m])
         return 0;
     }
 }
+
 /**
  * Function: place_boat
  *
@@ -367,10 +378,8 @@ int place_boat(int x1, int y1, char dir, char type, Board *board)
     return 1;
 }
 
-/*
- * @brief
- *
- *
+/**
+ * Function: check_sink
  *
  * Verifica se ao atacar a posição (x,y) algum barco é afundado.
  *
@@ -901,7 +910,7 @@ int main(void)
     fgets(j2.nome, 100, stdin);
     removeBreakline(j2.nome);
 
-    printf("\n%s, quer colocar os barcos ou atacá-los?\nIntroduza 1 para atacar e 0 para defender: ", j1.nome);
+    printf("\n%s, quer colocar os barcos ou atacá-los?\nIntroduza 0 para defender e 1 para atacar: ", j1.nome);
     while (option == -1)
     {
         scanf("%d", &option);
@@ -911,19 +920,19 @@ int main(void)
         {
         case 1:
             printf("\nO jogador %s irá atacar!\n", j1.nome);
-            j1.occupation = 1;
             printf("O jogador %s irá defender!\n", j2.nome);
-            j2.occupation = 0;
 
+            j1.occupation = 1; // j1 ataca
+            j2.occupation = 0;
             nomeAtacante = j1.nome;
             nomeDefensor = j2.nome;
             break;
         case 0:
             printf("\nO jogador %s irá atacar!\n", j2.nome);
-            j2.occupation = 1;
             printf("O jogador %s irá defender!\n", j1.nome);
-            j1.occupation = 0;
 
+            j2.occupation = 1; 
+            j1.occupation = 0; // j1 defende
             nomeDefensor = j1.nome;
             nomeAtacante = j2.nome;
             break;
@@ -970,11 +979,11 @@ int main(void)
         {
             if (j1.occupation == 0) // se era o j1 um a defender da mos lhe um ponto
             {
-                j1.score++;
+                j1.victories++;
             }
             else // caso contrario o ponto é do j2
             {
-                j2.score++;
+                j2.victories++;
             }
 
             printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
@@ -984,11 +993,11 @@ int main(void)
         {
             if (j1.occupation == 1) // se era o j1 um a atacar da mos lhe um ponto
             {
-                j1.score++;
+                j1.victories++;
             }
             else // caso contrario o ponto é do j2
             {
-                j2.score++;
+                j2.victories++;
             }
 
             printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante);
@@ -1002,14 +1011,14 @@ int main(void)
         {
             playAgain = getchar();
 
-            if (playAgain == 'Y' || playAgain == 'y')
+            if (playAgain == 'Y' || playAgain == 'y') // preparar o jogo para jogar outra vez
             {
                 printf("\nTROCA DE JOGADORES!, %s agora vai defender!\n", nomeAtacante);
                 getchar(); // consumir paragrafo
                 ataques = 40;
                 swapRole(&j1.occupation, &j2.occupation); // troca dos nomes, pois o jogo vai recomeçar
             }
-            else if (playAgain == 'n' || playAgain == 'N')
+            else if (playAgain == 'n' || playAgain == 'N') // sair do programa
             {
                 printf("Obrigado por jogar!\n");
                 return 0;
@@ -1018,7 +1027,7 @@ int main(void)
             {
                 playAgain = '\0';
             }
-            else
+            else // input inválido
             {
                 printf("Input inválido! Tente de novo.");
                 getchar(); // consumir paragrafo
