@@ -854,6 +854,13 @@ void attackLogic(int gaveUp, int *attacks, char *name1, char *name2, Position po
     }
 }
 
+/**
+ * Main function
+ *
+ * Função responsável pelo fluxo do programa.
+ * Contém o menu inicial, o loop da colocacao dos barcos e dos ataques,
+ * 
+ **/
 int main(void)
 {
     char *nomeAtacante, *nomeDefensor, playAgain;
@@ -918,21 +925,21 @@ int main(void)
 
         switch (option)
         {
-        case 1:
+        case 1: // j1 ataca
             printf("\nO jogador %s irá atacar!\n", j1.nome);
             printf("O jogador %s irá defender!\n", j2.nome);
 
-            j1.occupation = 1; // j1 ataca
+            j1.occupation = 1;
             j2.occupation = 0;
             nomeAtacante = j1.nome;
             nomeDefensor = j2.nome;
             break;
-        case 0:
+        case 0: // j1 defende
             printf("\nO jogador %s irá atacar!\n", j2.nome);
             printf("O jogador %s irá defender!\n", j1.nome);
 
             j2.occupation = 1; 
-            j1.occupation = 0; // j1 defende
+            j1.occupation = 0;
             nomeDefensor = j1.nome;
             nomeAtacante = j2.nome;
             break;
@@ -1025,13 +1032,13 @@ int main(void)
             }
             else if (playAgain == '\n') // por vezes entra um '\n' por alguma razao
             {
-                playAgain = '\0';
+                playAgain = '\0'; // reset playAgain
             }
             else // input inválido
             {
                 printf("Input inválido! Tente de novo.");
                 getchar(); // consumir paragrafo
-                playAgain = '\0';
+                playAgain = '\0'; // reset playAgain
             }
 
         } while (playAgain == '\0'); // certificar-nos que o utilizador so escolhe 'y' ou 'n'
