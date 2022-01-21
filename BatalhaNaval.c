@@ -45,7 +45,7 @@ typedef struct
     char board[N][M];   // Array que contém a informação de cada posição do tabuleiro
 } Board;
 
-/**Representa o nome do jogador e, sua ocupação dentro do jogo e o seu numero de vitórias.**/
+/**Representa um jogador. O seu nome, sua ocupação dentro do jogo e o seu numero de vitórias.**/
 typedef struct
 {
     char nome[100];     // Array que guarda o nome do jogador.
