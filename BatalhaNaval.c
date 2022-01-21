@@ -244,7 +244,7 @@ void init_boat(Boat *b, char type, Position xy, char dir)
     b->type = type;
 
     // as posicoes sao iniciadas aqui, dependendo da direção do barco
-    if (dir == 'H')
+    if (dir == 'H' || dir == 'h')
     {
         for (int i = 0; i < b->tSize; i++)
         {
@@ -253,7 +253,7 @@ void init_boat(Boat *b, char type, Position xy, char dir)
             b->coord[i].pos.y = xy.y + i;                   // e coordenada y vai aumentando até chegarmos a ultima posição   
         }
     }
-    else if (dir == 'V')
+    else if (dir == 'V' || dir == 'v')
     {
         for (int j = 0; j < b->tSize; j++)
         {
@@ -332,12 +332,12 @@ int place_boat(int x1, int y1, int dir, char type, Board *board)
     int indiceBarcos = 0, tamanhoBarco, isFree, checkIfInside, posX, posY;
     indiceBarcos = board->numBoats; // para readability
 
-    if (dir != 'H' && dir != 'V')
+    if (dir != 'H' && dir != 'V' && dir != 'h' && dir != 'v')
         return -3; // direção inválida
 
     tamanhoBarco = typeToSize(type);
 
-    checkIfInside = (dir == 'H') ? tamanhoBarco + y1 : tamanhoBarco + x1; // se este numero, dependente da direção, fôr maior que N ou M então o barco está fora da zona de jogo
+    checkIfInside = (dir == 'H' || dir == 'h') ? tamanhoBarco + y1 : tamanhoBarco + x1; // se este numero, dependente da direção, fôr maior que N ou M então o barco está fora da zona de jogo
 
     if (tamanhoBarco == -1 || indiceBarcos > 5) // tamanho/tipo invalido
     {
