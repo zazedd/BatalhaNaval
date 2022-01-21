@@ -516,7 +516,7 @@ int target(int x, int y, Board *board)
 void removeBreakline(char *str)
 {
     int pos = strcspn(str, "\n"); //acha a posição no array correspondente ao "\n"
-    str[pos] = 0;                 // elimina-a
+    str[pos] = '\0';                 // elimina-a
 }
 
 /**
