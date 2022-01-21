@@ -327,7 +327,7 @@ int check_free(int n, int m, Boat *boat, char board[n][m])
  * -3 se a direcção for inválida.
  * -4 se o tipo de barco for inválido.
  **/
-int place_boat(int x1, int y1, char dir, char type, Board *board)
+int place_boat(int x1, int y1, int dir, char type, Board *board)
 {
     int indiceBarcos = 0, tamanhoBarco, isFree, checkIfInside, posX, posY;
     indiceBarcos = board->numBoats; // para readability
@@ -862,7 +862,7 @@ int main(void)
     Board brd;
     Position xy;
     Player j1, j2;
-    j1.score = j2.score = 0;
+    j1.victories = j2.victories = 0;
 
     printf("Bem vindo ao jogo da Batalha naval!\n");
 
@@ -1004,7 +1004,7 @@ int main(void)
             print_board(N, M, brd.board, 0);
         }
 
-        printf("\nO score é agora: %s \\ %d - %d / %s\n", j1.nome, j1.score, j2.score, j2.nome);
+        printf("\nO score é agora: %s \\ %d - %d / %s\n", j1.nome, j1.victories, j2.victories, j2.nome);
 
         printf("\nVão pretender jogar de novo? (Y/n) ");
         do
