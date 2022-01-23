@@ -282,9 +282,8 @@ void init_boat(Boat *b, char type, Position xy, char dir)
  **/
 int check_free(int n, int m, Boat *boat, char board[n][m])
 {
-
     int posLivres = 0, posX, posY;
-    for (int i = 0; i < boat->tSize; i++)
+    for (int i = 0; i < boat->tSize; i++) // var i -> iterar pelas coordenadas
     {
         // este passo é apenas para readability
         posX = boat->coord[i].pos.x;
@@ -294,7 +293,7 @@ int check_free(int n, int m, Boat *boat, char board[n][m])
         {
             posLivres++;
         }
-        else // case contrario
+        else // caso contrario
         {
             return 0;
         }
@@ -353,12 +352,12 @@ int place_boat(int x1, int y1, int dir, char type, Board *board)
         board->boats[indiceBarcos].coord[0].pos.x = x1;
         board->boats[indiceBarcos].coord[0].pos.y = y1;
 
-        init_boat(&board->boats[indiceBarcos], type, board->boats[indiceBarcos].coord[0].pos, dir);
-
         isFree = check_free(N, M, &board->boats[indiceBarcos], board->board);
 
         if (isFree == 0)
             return -1; // posicao ocupada
+
+        init_boat(&board->boats[indiceBarcos], type, board->boats[indiceBarcos].coord[0].pos, dir);
 
         // temos todas as condicoes reunidas para meter o barco no tabuleiro
         for (int i = 0; i < board->boats[indiceBarcos].tSize; i++) // var i -> iterar pelos barcos
@@ -395,8 +394,6 @@ int place_boat(int x1, int y1, int dir, char type, Board *board)
  **/
 char check_sink(int x, int y, Board *board)
 {
-    int posMorta = 0;
-
     if (x < 0 || y < 0 || x >= N || y >= M) // coordenada invalida
     {
         return 'I';
@@ -409,23 +406,14 @@ char check_sink(int x, int y, Board *board)
             {
                 if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) // achar qual é o barco que a posição atingiu
                 {
-                    for (int k = 0; k < board->boats[i].tSize; k++)
+                    if (board->boats[i].afloat == 0) // se posicoes todas do barco estão mortas
                     {
-                        if (board->boats[i].coord[k].afloat == 0) // fazer um loop sobre as posicoes todas do barco para saber quantas estão mortas
-                        {
-                            posMorta++;
-                        }
-                        else
-                            return 'F';
-                    }
-
-                    if (posMorta == board->boats[i].tSize) // se elas estiverem todas mortas:
-                    {
-                        board->boats[i].afloat = 0;  // o barco afunda
-                        return board->boats[i].type; // e devolvemos a letra correspondente ao barco em questão
+                        return board->boats[i].type; // devolvemos o seu tipo
                     }
                     else
+                    {
                         return 'F';
+                    }
                 }
             }
         }
@@ -481,6 +469,7 @@ int target(int x, int y, Board *board)
                 if (board->boats[i].coord[j].pos.x == x && board->boats[i].coord[j].pos.y == y) // se acertou num barco:
                 {
                     board->boats[i].coord[j].afloat = 0; // marcamos a posição como morta
+                    board->boats[i].afloat--;
                     board->board[x][y] = '*';
 
                     if (check_sink(x, y, board) == board->boats[i].type) // se afundou:
@@ -687,15 +676,9 @@ void boatPlacingLogic(char *name, Position pos, Board *board)
     printf("Faltam inserir os barcos: ");
     for (int i = 0; i < B - board->numBoats; i++) // var i -> iterar pelos barcos
     {
-        if (i != (B - 1) - board->numBoats)
-        {
-            printf("%c, ", indiceToType(board->numBoats + i)); // print ao tipo com virgula, pois nao é o ultimo da lista
-        }
-        else
-        {
-            printf("%c\n", indiceToType(board->numBoats + i)); // print ao tipo sem virgula, pois é o ultimo da lista
-        }
+        printf("%c  ", indiceToType(board->numBoats + i));
     }
+    printf("\n");
 
     print_board(N, M, board->board, 1);
     tipo = indiceToType(board->numBoats);
@@ -774,16 +757,10 @@ void attackLogic(int gaveUp, int *attacks, char *name1, char *name2, Position po
     {
         if (board->boats[i].afloat != 0) // se o barco nao estiver afundado
         {
-            if (i != board->numBoats - 1 && board->numBoatsAfloat != 1) // e se nao for o ultimo da lista
-            {
-                printf("%c, ", board->boats[i].type); // print ao tipo desse barco (com virgula pois ha mais barcos a seguir)
-            }
-            else
-            {
-                printf("%c\n", board->boats[i].type); // print ao tipo desse barco (sem virgula pois é o ultimo da lista)
-            }
+            printf("%c  ", board->boats[i].type);
         }
     }
+    printf("\n");
 
     print_board(N, M, board->board, 0);
 
@@ -900,7 +877,7 @@ int main(void)
             clearConsole();
             printf("Inseriu o menu de ajuda!\n\n");
             printf("As regras do jogo serão as seguintes:\n- Existirão dois jogadores, um deles fazendo a colocação dos barcos e o outro posteriormente irá tentar afundá-los.\n- Existirá um total de seis barcos, com tamanhos diversos.\n");
-            printf("- O tabuleiro é %dx%d. Os ataques podem ser realizados inserindo coordenadas de (0,0) a (%d,%d), sendo a coordenada x as linhas, e y as colunas.\n", N, M, N-1, M-1);
+            printf("- O tabuleiro é %dx%d. Os ataques podem ser realizados inserindo coordenadas de (0,0) a (%d,%d), sendo a coordenada x as linhas, e y as colunas.\n", N, M, N - 1, M - 1);
             printf("- A colocação dos barcos  poderá ser feita na horizontal, colocando H, e na vertical, colocando V.\n");
             printf("- O jogador atacante terá um total de 40 jogadas para tentar afundar todos os barcos. Se, na sua jogada acertar num barco, no tabuleiro aparecerá '*' na posição atacada. Se afundar o barco, no seu tabuleiro aparecerá as posições do barco substituídas por um 'A'.\n");
             wait();
@@ -1004,7 +981,6 @@ int main(void)
 
             clearConsole();
             printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
-            print_board(N, M, brd.board, 0);
         }
         else
         {
@@ -1019,9 +995,9 @@ int main(void)
 
             clearConsole();
             printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante);
-            print_board(N, M, brd.board, 0);
         }
 
+        print_board(N, M, brd.board, 1);
         printf("\nO score é agora: %s \\ %d - %d / %s\n", j1.nome, j1.victories, j2.victories, j2.nome);
 
         printf("\nVão pretender jogar de novo? (Y/n) ");
