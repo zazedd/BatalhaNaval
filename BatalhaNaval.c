@@ -50,7 +50,7 @@ typedef struct
 {
     char nome[100];     // Array que guarda o nome do jogador.
     int occupation;     // Quando 1, o jogador ataca, quando 0 o jogador defende.
-    int victories;          // Vitorias de cada jogador
+    int victories;      // Vitorias de cada jogador
 } Player;
 
 Boat b; // usado para inserir os barcos, é arbitrario e apenas representa a struct
@@ -506,6 +506,17 @@ int target(int x, int y, Board *board)
 }
 
 /**
+ * Function: clearConsole
+ *
+ * Usa um regex para dar clear à consola.
+ * 
+ **/
+void clearConsole()
+{
+    printf("\e[1;1H\e[2J");
+}
+
+/**
  * Function: removeBreakline
  *
  * Função para remover o "\n" duma string
@@ -515,7 +526,7 @@ int target(int x, int y, Board *board)
  **/
 void removeBreakline(char *str)
 {
-    int pos = strcspn(str, "\n"); //acha a posição no array correspondente ao "\n"
+    int pos = strcspn(str, "\n");    //acha a posição no array correspondente ao "\n"
     str[pos] = '\0';                 // elimina-a
 }
 
@@ -660,23 +671,18 @@ int waitAttacking()
  * - Pedir ao utilizador para os inserir, e então realizar a insersão (place_boat).
  * - Avisar o utilizador caso ele tenha feito um erro ao inserir os barcos.
  * 
- * name1: nome do jogador que defende
- * name2: nome do jogador que ataca
+ * name: nome do jogador que defende
  * pos: struct posição para as coordenadas
  * board: posição atual do tabuleiro
  * 
  **/
-void boatPlacingLogic(char *name1, char *name2, Position pos, Board *board)
+void boatPlacingLogic(char *name, Position pos, Board *board)
 {
     char tipo, orientacao;
     int check;
 
-    if (board->numBoats > 0)
-    {
-        wait();
-    }
-
-    printf("\nVez do jogador: %s\n", name1);
+    clearConsole();
+    printf("Vez do jogador: %s\n", name);
 
     printf("Faltam inserir os barcos: ");
     for (int i = 0; i < B - board->numBoats; i++) // var i -> iterar pelos barcos
@@ -735,6 +741,11 @@ void boatPlacingLogic(char *name1, char *name2, Position pos, Board *board)
             break;
         }
     }
+
+    if (board->numBoats > 0)
+    {
+        wait();
+    }
 }
 
 /**
@@ -759,23 +770,8 @@ void boatPlacingLogic(char *name1, char *name2, Position pos, Board *board)
 void attackLogic(int gaveUp, int *attacks, char *name1, char *name2, Position pos, Board *board)
 {
     int check;
-    if (!gaveUp) // se ainda nao desistiu:
-    {
-        if (waitAttacking()) // esperamos por input, se o if for true, o utilizador desistiu.
-        {
-            // se o utilizador desistir:
 
-            getchar(); // consumir paragrafo
-            printf("\nO JOGADOR \"%s\" GANHOU!\n\n", name1);
-            print_board(N, M, board->board, 1);
-            gaveUp = 1;
-            wait();
-        }
-    }
-    else // so é executado se o utilizador desistiu
-    {
-        wait();
-    }
+    clearConsole();
 
     printf("Vez do jogador: %s\n", name2);
     printf("Ataques restantes = %d\n", *attacks);
@@ -852,6 +848,24 @@ void attackLogic(int gaveUp, int *attacks, char *name1, char *name2, Position po
     default:
         break;
     }
+
+    if (!gaveUp) // se ainda nao desistiu:
+    {
+        if (waitAttacking()) // esperamos por input para continuacao do programa
+        {
+            // se o utilizador desistir:
+
+            getchar(); // consumir paragrafo
+            printf("\nO JOGADOR \"%s\" GANHOU!\n\n", name1);
+            print_board(N, M, board->board, 1);
+            gaveUp = 1;
+            wait();
+        }
+    }
+    else // so é executado se o utilizador já tinha desistido
+    {
+        wait();
+    }
 }
 
 /**
@@ -905,6 +919,7 @@ int main(void)
         }
     }
 
+    clearConsole();
     option = -1;
 
     printf("Antes de começarem o jogo, por favor jogadores, introduzam os seus nomes.\n");
@@ -931,17 +946,13 @@ int main(void)
 
             j1.occupation = 1;
             j2.occupation = 0;
-            nomeAtacante = j1.nome;
-            nomeDefensor = j2.nome;
             break;
         case 0: // j1 defende
             printf("\nO jogador %s irá atacar!\n", j2.nome);
             printf("O jogador %s irá defender!\n", j1.nome);
 
-            j2.occupation = 1; 
             j1.occupation = 0;
-            nomeDefensor = j1.nome;
-            nomeAtacante = j2.nome;
+            j2.occupation = 1; 
             break;
         default:
             printf("Assim não vamos lá... Introduza 1 se quiser atacar e 0 se quiser defender!");
@@ -953,6 +964,8 @@ int main(void)
     do
     {
         init_board(N, M, &brd);
+
+        clearConsole();
 
         if (j1.occupation == 0) // se j1 defende
         {
@@ -967,10 +980,10 @@ int main(void)
 
         while (brd.numBoats < B) // colocação dos barcos
         {
-            boatPlacingLogic(nomeDefensor, nomeAtacante, xy, &brd);
+            boatPlacingLogic(nomeDefensor, xy, &brd);
         } 
 
-        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"); // saiam daqui barcos
+        clearConsole();
 
         while (ataques > 0) // logica dos ataques
         {
@@ -993,6 +1006,7 @@ int main(void)
                 j2.victories++;
             }
 
+            clearConsole();
             printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeDefensor);
             print_board(N, M, brd.board, 0);
         }
@@ -1007,6 +1021,7 @@ int main(void)
                 j2.victories++;
             }
 
+            clearConsole();
             printf("\nO JOGADOR \"%s\" GANHOU!\n\n", nomeAtacante);
             print_board(N, M, brd.board, 0);
         }
